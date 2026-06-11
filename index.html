@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Navigator — Configurador IA Neones</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --y:#F5C800;--y2:rgba(245,200,0,0.1);--y3:rgba(245,200,0,0.22);
+  --bg:#09090C;--s1:#111114;--s2:#18181C;--s3:#232328;--s4:#303036;
+  --muted:#55555F;--dim:#88889A;--light:#C0C0CC;--white:#F0EFE8;
+  --green:#3DDB82;--red:#FF5252;--orange:#FF9A3C;--blue:#4DA6FF;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;overflow:hidden;}
+body{background:var(--bg);color:var(--white);font-family:'Syne',sans-serif;font-size:14px;-webkit-font-smoothing:antialiased;display:flex;flex-direction:column;}
+
+/* ── HEADER ── */
+.hdr{background:var(--s1);border-bottom:1px solid var(--s3);padding:0 24px;height:52px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:16px;}
+.hdr-logo{font-family:'Instrument Serif',serif;font-size:18px;color:var(--y);display:flex;align-items:center;gap:10px;white-space:nowrap;}
+.hdr-logo span{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;}
+.hdr-key-wrap{display:flex;align-items:center;gap:8px;flex:1;max-width:420px;}
+.hdr-key{flex:1;background:var(--s2);border:1px solid var(--s4);padding:7px 12px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--white);outline:none;transition:border-color 0.15s;}
+.hdr-key:focus{border-color:var(--y);}
+.hdr-key-st{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:1.5px;padding:4px 10px;background:var(--s2);border:1px solid var(--s4);color:var(--muted);white-space:nowrap;}
+
+/* ── LAYOUT ── */
+.layout{display:grid;grid-template-columns:1fr 380px;flex:1;overflow:hidden;min-height:0;}
+
+/* ── CHAT ── */
+.chat-panel{display:flex;flex-direction:column;overflow:hidden;min-height:0;}
+.messages{flex:1;overflow-y:auto;padding:24px 28px;display:flex;flex-direction:column;gap:18px;}
+.messages::-webkit-scrollbar{width:3px;}
+.messages::-webkit-scrollbar-thumb{background:var(--s4);}
+
+.msg{display:flex;gap:12px;animation:fadeUp 0.25s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+.msg-av{width:30px;height:30px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;margin-top:2px;}
+.msg-av.nav{background:var(--y);color:var(--bg);font-weight:700;font-family:'IBM Plex Mono',monospace;font-size:9px;}
+.msg-av.usr{background:var(--s3);color:var(--white);}
+.msg-body{flex:1;min-width:0;}
+.msg-name{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:1px;color:var(--muted);margin-bottom:4px;text-transform:uppercase;}
+.msg-text{font-size:13px;color:var(--light);line-height:1.65;}
+.msg-text strong{color:var(--white);}
+.msg-text em{color:var(--y);font-style:normal;}
+.msg-img{max-width:200px;max-height:140px;border:1px solid var(--s4);margin-bottom:6px;display:block;}
+
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
+.chip{font-size:11.5px;color:var(--dim);padding:5px 11px;border:1px solid var(--s4);background:var(--s2);cursor:pointer;transition:all 0.15s;}
+.chip:hover{border-color:var(--y);color:var(--y);background:var(--y2);}
+
+.typing{display:flex;align-items:center;gap:5px;padding:6px 0;}
+.td{width:6px;height:6px;border-radius:50%;background:var(--y);animation:tb 1.2s ease-in-out infinite;}
+.td:nth-child(2){animation-delay:0.2s;}.td:nth-child(3){animation-delay:0.4s;}
+@keyframes tb{0%,80%,100%{transform:translateY(0);opacity:0.4;}40%{transform:translateY(-5px);opacity:1;}}
+
+/* ── INPUT ── */
+.input-wrap{border-top:1px solid var(--s3);padding:14px 24px;background:var(--s1);flex-shrink:0;}
+.photo-preview{position:relative;margin-bottom:8px;display:none;}
+.photo-preview img{max-height:80px;border:1px solid var(--s4);}
+.photo-remove{position:absolute;top:3px;left:3px;background:rgba(0,0,0,0.75);color:#fff;border:none;width:20px;height:20px;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.input-row{display:flex;gap:8px;align-items:flex-end;}
+.photo-btn{background:var(--s3);border:1px solid var(--s4);width:42px;height:42px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;flex-shrink:0;transition:all 0.15s;color:var(--dim);}
+.photo-btn:hover{border-color:var(--y);color:var(--y);}
+.input-box{flex:1;background:var(--s2);border:1px solid var(--s4);padding:10px 14px;font-family:'Syne',sans-serif;font-size:13px;color:var(--white);resize:none;max-height:100px;min-height:42px;outline:none;transition:border-color 0.15s;line-height:1.5;}
+.input-box:focus{border-color:var(--y);}
+.input-box::placeholder{color:var(--muted);}
+.send-btn{background:var(--y);border:none;width:42px;height:42px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;flex-shrink:0;transition:opacity 0.15s;}
+.send-btn:hover{opacity:0.85;}
+.send-btn:disabled{opacity:0.3;cursor:not-allowed;}
+.input-hint{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);margin-top:5px;}
+
+/* ── SIDEBAR / BUDGET ── */
+.sidebar{background:var(--s1);border-left:1px solid var(--s3);display:flex;flex-direction:column;overflow:hidden;min-height:0;}
+.sb-head{padding:16px 20px;border-bottom:1px solid var(--s3);flex-shrink:0;display:flex;align-items:center;justify-content:space-between;}
+.sb-head-title{font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--muted);}
+.sb-body{flex:1;overflow-y:auto;padding:16px 20px;}
+.sb-body::-webkit-scrollbar{width:3px;}
+.sb-body::-webkit-scrollbar-thumb{background:var(--s4);}
+.sb-empty{font-size:12px;color:var(--muted);line-height:1.8;padding:12px 0;text-align:center;}
+
+/* Sidebar sections */
+.sb-section{margin-bottom:16px;}
+.sb-section-title{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--s3);}
+
+.sb-series-block{background:var(--y2);border:1px solid var(--y3);padding:12px 14px;margin-bottom:12px;}
+.sb-series-name{font-family:'Instrument Serif',serif;font-size:22px;color:var(--y);line-height:1;}
+.sb-series-sub{font-size:11px;color:var(--muted);margin-top:3px;}
+.sb-excl{font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:1.5px;padding:2px 7px;background:var(--y);color:var(--bg);font-weight:700;margin-top:6px;display:inline-block;}
+
+.sb-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--s3);font-size:12px;}
+.sb-row:last-child{border-bottom:none;}
+.sb-label{color:var(--dim);}
+.sb-val{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;color:var(--white);}
+.sb-val.y{color:var(--y);}
+.sb-val.g{color:var(--green);}
+
+/* Materials table */
+.mat-table{width:100%;border-collapse:collapse;margin-bottom:8px;}
+.mat-table th{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);padding:6px 0;text-align:left;border-bottom:1px solid var(--s3);}
+.mat-table th:last-child{text-align:right;}
+.mat-table td{font-size:11px;padding:7px 0;border-bottom:1px solid var(--s3);color:var(--light);vertical-align:top;}
+.mat-table td:last-child{text-align:right;font-family:'IBM Plex Mono',monospace;font-weight:600;white-space:nowrap;}
+.mat-ref{font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;color:var(--y);}
+.mat-desc{font-size:10.5px;color:var(--dim);margin-top:1px;}
+
+.total-row{background:var(--y2);border:1px solid var(--y3);padding:10px 12px;display:flex;justify-content:space-between;align-items:center;margin-top:4px;}
+.total-label{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--y);}
+.total-val{font-family:'Instrument Serif',serif;font-size:22px;color:var(--y);}
+
+/* Action buttons */
+.sb-actions{display:flex;flex-direction:column;gap:8px;margin-top:16px;padding-top:16px;border-top:1px solid var(--s3);}
+.btn-pdf{background:var(--y);color:var(--bg);border:none;padding:11px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;cursor:pointer;width:100%;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity 0.15s;}
+.btn-pdf:hover{opacity:0.88;}
+.btn-render{background:transparent;color:var(--y);border:1px solid var(--y3);padding:11px;font-family:'Syne',sans-serif;font-size:12px;font-weight:600;cursor:pointer;width:100%;display:flex;align-items:center;justify-content:center;gap:8px;transition:all 0.15s;}
+.btn-render:hover{background:var(--y2);}
+.btn-render:disabled{opacity:0.35;cursor:not-allowed;}
+.btn-reset{background:transparent;color:var(--muted);border:1px solid var(--s4);padding:9px;font-family:'Syne',sans-serif;font-size:12px;cursor:pointer;width:100%;transition:all 0.15s;}
+.btn-reset:hover{color:var(--white);border-color:var(--dim);}
+
+/* Render preview in sidebar */
+.render-preview{position:relative;margin-top:12px;display:none;}
+.render-preview img.rb{width:100%;display:block;border:1px solid var(--s4);}
+.render-preview canvas{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;}
+.render-caption{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);margin-top:5px;letter-spacing:1px;}
+
+/* ── PRINT STYLES ── */
+#budgetPrint{display:none;}
+@media print{
+  body>*:not(#budgetPrint){display:none!important;}
+  #budgetPrint{display:block!important;font-family:Arial,sans-serif;color:#111;padding:28px 36px;}
+  .bp-hdr{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #F5C800;padding-bottom:18px;margin-bottom:24px;}
+  .bp-logo{font-size:26px;font-weight:900;letter-spacing:-1px;}
+  .bp-logo span{color:#F5C800;}
+  .bp-meta{font-size:10px;color:#666;line-height:1.8;margin-top:6px;}
+  .bp-num{font-size:20px;font-weight:900;text-align:right;}
+  .bp-render{text-align:center;margin-bottom:20px;}
+  .bp-render img{max-width:100%;max-height:260px;border:1px solid #e0e0d8;}
+  .bp-render-cap{font-size:10px;color:#888;margin-top:4px;font-style:italic;}
+  .bp-section-title{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#888;margin:18px 0 8px;}
+  .bp-specs{background:#fafaf7;border:1px solid #e8e8e0;padding:14px;margin-bottom:18px;display:grid;grid-template-columns:1fr 1fr;gap:4px 24px;}
+  .bp-spec{display:flex;justify-content:space-between;font-size:10.5px;padding:3px 0;border-bottom:1px solid #eee;}
+  .bp-spec-l{color:#666;}
+  .bp-spec-v{font-weight:700;}
+  table.bp-table{width:100%;border-collapse:collapse;margin-bottom:8px;}
+  table.bp-table th{background:#111;color:#fff;padding:8px 12px;font-size:10px;letter-spacing:1px;text-align:left;}
+  table.bp-table th.y{background:#F5C800;color:#111;}
+  table.bp-table td{padding:8px 12px;font-size:11px;border-bottom:1px solid #e8e0;}
+  table.bp-table tr:nth-child(even) td{background:#fafaf7;}
+  table.bp-table td.r{text-align:right;font-weight:700;}
+  .bp-total{background:#111;color:#fff;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;margin-top:6px;}
+  .bp-total-l{font-size:12px;letter-spacing:1px;}
+  .bp-total-v{font-size:22px;font-weight:900;}
+  .bp-sub{display:flex;justify-content:space-between;padding:6px 18px;font-size:11px;background:#f5f5f0;}
+  .bp-footer{margin-top:28px;font-size:9px;color:#999;border-top:1px solid #e8e8e0;padding-top:12px;line-height:1.9;}
+}
+</style>
+</head>
+<body>
+
+<div id="budgetPrint"></div>
+
+<header class="hdr">
+  <div class="hdr-logo">Navigator <span>CONFIGURADOR IA · NEONES 2026</span></div>
+  <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:600;letter-spacing:2px;padding:5px 12px;background:var(--y2);border:1px solid var(--y3);color:var(--y);">✦ POWERED BY CLAUDE</div>
+</header>
+
+<div class="layout">
+
+  <!-- CHAT -->
+  <div class="chat-panel">
+    <div class="messages" id="messages"></div>
+    <div class="input-wrap">
+      <div class="photo-preview" id="photoPreview">
+        <img id="photoThumb" src="" alt="">
+        <button class="photo-remove" onclick="removePhoto()">✕</button>
+      </div>
+      <div class="input-row">
+        <button class="photo-btn" onclick="document.getElementById('photoInput').click()" title="Subir foto">📷</button>
+        <input type="file" id="photoInput" accept="image/jpeg,image/png,image/gif,image/webp" style="display:none" onchange="handlePhoto(event)">
+        <textarea class="input-box" id="inputBox" rows="1"
+          placeholder="Describe tu proyecto... ej: 8 metros barra negra, cálido, sin driver"
+          onkeydown="handleKey(event)"></textarea>
+        <button class="send-btn" id="sendBtn" onclick="sendMessage()">➤</button>
+      </div>
+      <div class="input-hint">Lenguaje natural · 📷 foto del espacio · Enter enviar · Shift+Enter nueva línea</div>
+    </div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sb-head">
+      <div class="sb-head-title">Presupuesto</div>
+      <div id="sbStatus" style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);">ESPERANDO</div>
+    </div>
+    <div class="sb-body" id="sidebarBody">
+      <div class="sb-empty">Describe tu proyecto en el chat.<br><br>El presupuesto se irá completando aquí en tiempo real.</div>
+    </div>
+    <!-- RENDER PANEL — fixed -->
+    <div id="renderPreview" style="display:none;border-top:1px solid var(--s3);flex-shrink:0;padding:14px 20px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;">Simulación · arrastra para ajustar</div>
+        <button onclick="doRender()" id="regenBtn" style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--y);background:none;border:none;cursor:pointer;letter-spacing:1px;">↺ REGENERAR</button>
+      </div>
+      <!-- Canvas container — ONLY canvas, image drawn on it -->
+      <div style="position:relative;user-select:none;">
+        <canvas id="renderCanvas" style="width:100%;display:block;border:1px solid var(--s4);cursor:crosshair;touch-action:none;"></canvas>
+      </div>
+      <div id="renderCaption" style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);margin-top:5px;letter-spacing:1px;"></div>
+      <div style="display:flex;gap:6px;margin-top:8px;">
+        <button onclick="downloadRender()" style="flex:1;background:var(--y);color:var(--bg);border:none;padding:8px;font-family:'Syne',sans-serif;font-size:11px;font-weight:700;cursor:pointer;">↓ Descargar</button>
+        <button onclick="undoLine()" style="background:var(--s3);color:var(--dim);border:1px solid var(--s4);padding:8px 12px;font-family:'Syne',sans-serif;font-size:11px;cursor:pointer;" title="Deshacer última línea">↩</button>
+        <button onclick="clearLines()" style="background:var(--s3);color:var(--dim);border:1px solid var(--s4);padding:8px 12px;font-family:'Syne',sans-serif;font-size:11px;cursor:pointer;" title="Borrar todo">✕</button>
+      </div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);margin-top:6px;line-height:1.6;">
+        Arrastra líneas para moverlas · ↩ deshacer · ✕ borrar todo
+      </div>
+    </div>
+  </aside>
+
+</div>
+
+<script>
+// ════════════════════════════════════════════
+// DATOS DE PRODUCTO — Navigator 2026
+// ════════════════════════════════════════════
+const ND = {
+  tetra3d:{name:'Tetra 3D',refs:{'1800K':'83852','2700K':'83853','3000K':'83854','4000K':'83855'},
+    watts:10,lm:{'1800K':500,'2700K':570,'3000K':590,'4000K':606},corte:35.7,
+    w:'10×10mm',ip:'IP67',ik:'IK10',v:'24V',pvp:31.90,excl:false,
+    kw:['3d','volumen','logotipo','rotulo','curva','bidireccional','compleja','concesionario','estrella'],
+    why:'Flexión bidireccional (H+V simultánea). El más compacto para formas 3D.'},
+  vira:{name:'Vira',refs:{'2700K':'83861','4000K':'83862'},
+    watts:12,lm:{'2700K':744,'4000K':784},corte:100,
+    w:'15×16mm',ip:'IP67',ik:'IK10',v:'230V',pvp:39.90,excl:true,
+    kw:['230v','sin driver','sin fuente','red','reforma','corriente','fachada larga','pasillo'],
+    why:'Único neón 230V con CRI>90. Sin driver ni fuente.'},
+  cube:{name:'Cube',refs:{'2200K':'83856','3000K':'83857','4000K':'83858','5700K':'83859','RGB':'83860'},
+    watts:10,lm:{'2200K':700,'3000K':800,'4000K':830,'5700K':820,'RGB':380},corte:50,
+    w:'15×16mm',ip:'IP67',ik:'IK10',v:'24V',pvp:{mono:33.90,rgb:44.90},excl:false,
+    kw:['rgb','color','programable','escaparate','balda','mobiliario','frio','5700'],
+    why:'5 temperaturas + RGB. Único con 5700K en neón cuadrado.'},
+  slot:{name:'Slot',refs:{'2700K':'83863','3000K':'83864','4000K':'83865'},
+    watts:10,lm:{'2700K':660,'3000K':707,'4000K':763},corte:50,
+    w:'15×16mm',ip:'IP67',ik:'IK10',v:'24V',pvp:33.90,excl:true,
+    kw:['empotrar','empotrado','encimera','superficie','oculto','mueble','ras'],
+    why:'Único neón empotrable. Luz que surge de la superficie.'},
+  pix:{name:'Pix',refs:{'RGBW':'83866'},
+    watts:15,lm:{'RGBW':450},corte:125,
+    w:'15×16mm',ip:'IP67',ik:'IK10',v:'24V',pvp:84.90,excl:true,
+    kw:['dmx','dmx512','consola','escena','fachada dinamica','espectaculo','museo'],
+    why:'Único neón con DMX512 nativo.'},
+  dark:{name:'Dark',refs:{'3000K':'83867','4000K':'83868'},
+    watts:10,lm:{'3000K':150,'4000K':150},corte:50,
+    w:'16×15mm',ip:'IP67',ik:'IK10',v:'24V',pvp:40.00,excl:true,
+    kw:['negro','black','oscuro','barra negra','mueble negro','lacado'],
+    why:'Cuerpo negro. Invisible apagado. Efecto decorativo.'},
+  apex:{name:'Apex',refs:{'2700K':'83869','3000K':'83870'},
+    watts:10,lm:{'2700K':800,'3000K':850},corte:25,
+    w:'10.2×21.9mm',ip:'IP67',ik:'IK10',v:'24V',pvp:34.90,excl:true,
+    kw:['esquina','arista','canto','angulo','90','borde','mueble','corner'],
+    why:'Único neón de esquina. Perfil 90°. Mayor flujo.'},
+  forza:{name:'Forza',refs:{'1800K':'83660','2200K':'83661','2700K':'83662','3000K':'83663','4000K':'83664','5700K':'83665'},
+    watts:10,lm:{'1800K':486,'2200K':540,'2700K':640,'3000K':670,'4000K':700,'5700K':720},corte:50,
+    w:'16×17mm',ip:'IP67',ik:'IK10',v:'24V',pvp:null,excl:true,
+    kw:['suelo','pisable','transitable','escalera','terraza','jardin','camino'],
+    why:'Único neón transitable. Pisable.'},
+  halo:{name:'Halo',refs:{'2700K':'83519','3000K':'83520','4000K':'83521'},
+    watts:8,lm:{'2700K':620,'3000K':660,'4000K':680},corte:null,
+    w:'8×12mm',ip:'IP67',ik:'',v:'24V',pvp:31.56,excl:false,
+    kw:['360','circular','nimbo','arco','colgante','suspendido'],
+    why:'Emisión 360°. 8mm sección. Colgantes y doble cara.'},
+  tetra:{name:'Tetra',refs:{'2700K':'83525','3000K':'83526','4000K':'83527'},
+    watts:10,lm:{'2700K':780,'3000K':800,'4000K':840},corte:35.7,
+    w:'10×7mm',ip:'IP67',ik:'',v:'24V',pvp:33.48,excl:false,
+    kw:['rotulo','letra','foseado','lineal','hosteleria','cree','frontal'],
+    why:'Chip Cree. 840 lm/m. Rótulos y foseados.'},
+};
+
+const ACCS = {
+  new_series:[
+    {ref:'Grapa 1617',desc:'Grapa sujeción',pvp:1.50,unit:'ud.',qty:(m)=>Math.ceil(m/0.5)},
+    {ref:'PA014',desc:'Perfil Neo aluminio 2m',pvp:8.85,unit:'ud.(2m)',qty:(m)=>Math.ceil(m/2),opt:true},
+    {ref:'PA311',desc:'Perfil Briano aluminio 2m',pvp:14.95,unit:'ud.(2m)',qty:(m)=>Math.ceil(m/2),opt:true},
+  ],
+  tetra:[
+    {ref:'83511',desc:'Tapa final',pvp:1.90,unit:'ud.',qty:(m,r)=>r},
+    {ref:'83528',desc:'Conexión cable trasero',pvp:2.00,unit:'ud.',qty:(m,r)=>r},
+    {ref:'83704',desc:'Grapa sujeción',pvp:0.60,unit:'ud.',qty:(m)=>Math.ceil(m/0.5)},
+  ],
+  halo:[
+    {ref:'83522',desc:'Tapa inicial',pvp:0.95,unit:'ud.',qty:(m,r)=>r},
+    {ref:'83523',desc:'Tapa final',pvp:0.95,unit:'ud.',qty:(m,r)=>r},
+    {ref:'83524',desc:'Grapa sujeción',pvp:1.60,unit:'ud.',qty:(m)=>Math.ceil(m/0.5)},
+  ],
+  forza:[
+    {ref:'83666',desc:'Perfil rígido suelo',pvp:null,unit:'ud.',qty:(m)=>Math.ceil(m)},
+    {ref:'83668',desc:'Difusor',pvp:null,unit:'ud.',qty:(m)=>Math.ceil(m)},
+    {ref:'83669',desc:'Tapa final perfil',pvp:null,unit:'ud.',qty:(m,r)=>r*2},
+    {ref:'83672',desc:'Sujeción a suelo',pvp:null,unit:'ud.',qty:(m)=>Math.ceil(m/0.5)},
+  ],
+};
+
+const NEON_GLOW = {
+  '1800K':'255,140,0','2200K':'255,165,45','2700K':'255,195,90',
+  '3000K':'255,225,150','4000K':'240,245,225','5700K':'200,220,255',
+  '6000K':'200,220,255','6500K':'190,210,255',
+  'RGB':'255,50,160','RGBW':'180,100,255',
+};
+
+// ════════════════════════════════════════════
+// ESTADO
+// ════════════════════════════════════════════
+let apiKey = '';
+// fal.ai key managed server-side via Netlify Function
+let pendingPhoto = null;
+let lastPhoto = null;
+let isLoading = false;
+let cfg = {serie:null, cct:null, metros:null};
+const history = [];
+
+function pvpM(serie, cct) {
+  const d = ND[serie]; if(!d||!d.pvp) return null;
+  if(typeof d.pvp==='object') return cct==='RGB'?d.pvp.rgb:d.pvp.mono;
+  return d.pvp;
+}
+
+function getAccs(serie, metros) {
+  const d = ND[serie];
+  const rollos = Math.ceil(metros/((d.rollo||5000)/1000));
+  const list = ACCS[serie] || ACCS.new_series;
+  return list.map(a=>({...a, qty2:a.qty(metros,rollos), total:a.pvp?a.pvp*a.qty(metros,rollos):null}));
+}
+
+// ════════════════════════════════════════════
+// API KEY
+// ════════════════════════════════════════════
+// key management server-side
+
+
+// ════════════════════════════════════════════
+// PHOTO
+// ════════════════════════════════════════════
+function handlePhoto(e) {
+  const file = e.target.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    // Comprimir la imagen antes de guardarla — max 1200px, calidad 0.82
+    const img = new Image();
+    img.onload = () => {
+      const MAX = 1200;
+      let w = img.naturalWidth, h = img.naturalHeight;
+      if(w > MAX || h > MAX) {
+        if(w > h) { h = Math.round(h * MAX/w); w = MAX; }
+        else { w = Math.round(w * MAX/h); h = MAX; }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      const du = canvas.toDataURL('image/jpeg', 0.82);
+      const b64 = du.split(',')[1];
+      const mt = 'image/jpeg';
+      pendingPhoto = {b64, mt, du};
+      lastPhoto = {b64, mt, du};
+      document.getElementById('photoThumb').src = du;
+      document.getElementById('photoPreview').style.display = 'block';
+      document.getElementById('inputBox').placeholder = '✓ Foto cargada — describe qué necesitas o pulsa enviar';
+      document.getElementById('inputBox').focus();
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+  e.target.value='';
+}
+
+function removePhoto() {
+  pendingPhoto = null;
+  document.getElementById('photoPreview').style.display='none';
+  document.getElementById('photoThumb').src='';
+  document.getElementById('inputBox').placeholder='Describe tu proyecto... ej: 8 metros barra negra, cálido, sin driver';
+}
+
+// ════════════════════════════════════════════
+// CHAT UI
+// ════════════════════════════════════════════
+function addMsg(role, html, chips) {
+  const msgs = document.getElementById('messages');
+  const d = document.createElement('div');
+  d.className='msg';
+  const isNav = role==='nav';
+  d.innerHTML=`<div class="msg-av ${isNav?'nav':'usr'}">${isNav?'N':'👤'}</div>
+    <div class="msg-body">
+      <div class="msg-name">${isNav?'Navigator':'Tú'}</div>
+      <div class="msg-text">${html}</div>
+      ${chips&&chips.length?`<div class="chips">${chips.map(c=>`<button class="chip" onclick="sendChip('${c}')">${c}</button>`).join('')}</div>`:''}
+    </div>`;
+  msgs.appendChild(d);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function showTyping() {
+  const msgs = document.getElementById('messages');
+  const d = document.createElement('div');
+  d.className='msg'; d.id='typing';
+  d.innerHTML=`<div class="msg-av nav">N</div><div class="msg-body"><div class="msg-name">Navigator</div><div class="typing"><div class="td"></div><div class="td"></div><div class="td"></div></div></div>`;
+  msgs.appendChild(d); msgs.scrollTop=msgs.scrollHeight;
+}
+function removeTyping(){const t=document.getElementById('typing');if(t)t.remove();}
+
+// ════════════════════════════════════════════
+// SIDEBAR RENDER
+// ════════════════════════════════════════════
+function updateSidebar() {
+  const body = document.getElementById('sidebarBody');
+  const st = document.getElementById('sbStatus');
+
+  if(!cfg.serie) {
+    st.textContent='ESPERANDO';
+    body.innerHTML='<div class="sb-empty">Describe tu proyecto en el chat.<br><br>El presupuesto se irá completando aquí en tiempo real.</div>';
+    return;
+  }
+
+  const d = ND[cfg.serie];
+  const ref = cfg.cct ? (d.refs[cfg.cct]||Object.values(d.refs)[0]) : '—';
+  const pm = cfg.cct ? pvpM(cfg.serie, cfg.cct) : null;
+  const metros = cfg.metros;
+
+  // Calculate totals
+  let totalNeon=0, totalAcc=0, totalDriver=0, accsHtml='';
+  if(metros && cfg.cct) {
+    totalNeon = pm ? pm*metros : 0;
+    const accs = getAccs(cfg.serie, metros);
+    const oblAcc = accs.filter(a=>!a.opt);
+    totalAcc = oblAcc.filter(a=>a.total).reduce((s,a)=>s+a.total,0);
+    // Driver cost
+    if(d.v !== '230V') {
+      const exterior = ['forza','halo'].includes(cfg.serie);
+      const {total: dt} = selectDriver(Math.round(d.watts*metros), exterior);
+      totalDriver = dt;
+    }
+    const totalBase = totalNeon+totalAcc+totalDriver;
+    const iva = totalBase*0.21;
+
+    // Accessories rows
+    const driverRow = d.v!=='230V' && metros ? (() => {
+      const exterior = ['forza','halo'].includes(cfg.serie);
+      const {driver, qty, total} = selectDriver(Math.round(d.watts*metros), exterior);
+      return `<tr><td><span class="mat-ref">${driver.ref}</span><div class="mat-desc">Fuente 24V ${driver.w}W · ${exterior?'IP67':'IP20'} · ${qty} ud.</div></td><td>${total.toFixed(2).replace('.',',')}€</td></tr>`;
+    })() :
+      `<tr><td><span class="mat-ref" style="color:var(--green)">✓ SIN DRIVER</span><div class="mat-desc" style="color:var(--green)">230V directo a red</div></td><td style="color:var(--green)">—</td></tr>`;
+
+    const sealedRow = `<tr><td><span class="mat-ref" style="color:var(--green)">✓ SELLADO</span><div class="mat-desc" style="color:var(--green)">Fábrica · tapas incluidas</div></td><td style="color:var(--green)">Incluido</td></tr>`;
+
+    const accRows = oblAcc.map(a=>`<tr>
+      <td><span class="mat-ref">${a.ref}</span><div class="mat-desc">${a.desc} · ${a.qty2} ${a.unit}</div></td>
+      <td>${a.total?a.total.toFixed(2).replace('.',',')+'€':'consultar'}</td>
+    </tr>`).join('');
+
+    accsHtml = `
+    <div class="sb-section">
+      <div class="sb-section-title">Lista de materiales</div>
+      <table class="mat-table">
+        <thead><tr><th>Producto</th><th>Total</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="mat-ref">${ref}</span><div class="mat-desc">${d.name} ${cfg.cct||''} · ${d.w} · ${metros}m exactos</div></td>
+            <td>${pm?(pm*metros).toFixed(2).replace('.',',')+'€':'consultar'}</td>
+          </tr>
+          ${driverRow}${sealedRow}${accRows}
+        </tbody>
+      </table>
+      <div class="total-row">
+        <div>
+          <div class="total-label">SUBTOTAL SIN IVA</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);margin-top:2px">+ IVA 21% = ${(totalBase*1.21).toFixed(2).replace('.',',')} €</div>
+        </div>
+        <div class="total-val">${totalBase.toFixed(2).replace('.',',')} €</div>
+      </div>
+    </div>
+
+    <div class="sb-actions">
+      <button class="btn-pdf" onclick="printBudget()">🖨 Presupuesto PDF</button>
+      <button class="btn-render" id="btnRender" onclick="doRender()">
+        ✦ Simular en mi espacio
+      </button>
+      <button class="btn-reset" onclick="resetAll()">Nueva configuración</button>
+    </div>`;
+
+    // Update render button state after DOM update
+    setTimeout(() => {
+      const btn = document.getElementById('btnRender');
+      if(btn) {
+        if(lastPhoto) {
+          btn.disabled = false;
+          btn.style.opacity = '1';
+          btn.title = '';
+        } else {
+          btn.disabled = true;
+          btn.style.opacity = '0.4';
+          btn.title = 'Sube una foto del espacio primero (📷)';
+          btn.textContent = '📷 Sube foto para simular';
+        }
+      }
+    }, 50);
+
+    st.textContent = metros ? 'LISTO' : 'EN CURSO';
+  } else {
+    st.textContent = 'EN CURSO';
+  }
+
+  body.innerHTML = `
+    <div class="sb-series-block">
+      <div class="sb-series-name">${d.name}</div>
+      <div class="sb-series-sub">${d.w} · ${d.ip} · ${d.v}</div>
+      ${d.excl?'<div class="sb-excl">✦ EXCLUSIVO NAVIGATOR</div>':''}
+    </div>
+
+    <div class="sb-section">
+      <div class="sb-section-title">Especificaciones</div>
+      ${cfg.cct?`<div class="sb-row"><span class="sb-label">Temperatura</span><span class="sb-val y">${cfg.cct}</span></div>`:''}
+      ${metros?`<div class="sb-row"><span class="sb-label">Metros</span><span class="sb-val y">${metros} m exactos</span></div>`:''}
+      ${metros?`<div class="sb-row"><span class="sb-label">Potencia total</span><span class="sb-val">${Math.round(d.watts*metros)} W</span></div>`:''}
+      ${pm?`<div class="sb-row"><span class="sb-label">€/metro</span><span class="sb-val">${pm.toFixed(2).replace('.',',')} €</span></div>`:''}
+      <div class="sb-row"><span class="sb-label">SDCM</span><span class="sb-val y">3 · declarado</span></div>
+      <div class="sb-row"><span class="sb-label">CRI</span><span class="sb-val y">>90 Ra</span></div>
+      <div class="sb-row"><span class="sb-label">Garantía</span><span class="sb-val y">5 años</span></div>
+      <div class="sb-row"><span class="sb-label">Sellado</span><span class="sb-val g">Fábrica · listo</span></div>
+    </div>
+
+    ${accsHtml}
+  `;
+}
+
+// ════════════════════════════════════════════
+// RENDER — IA sugiere + usuario ajusta arrastrando
+// ════════════════════════════════════════════
+
+// Estado del render
+let renderImg = null;      // HTMLImageObject
+let renderLines = [];      // [{x1,y1,x2,y2,label}] en coordenadas 0-1
+let glowColor = '255,195,90';
+let dragState = null;      // {lineIdx, end:'start'|'end'|'whole', startX,startY, origLine}
+
+function getCanvas() { return document.getElementById('renderCanvas'); }
+
+// Dibuja imagen + líneas en el canvas
+function redraw() {
+  const canvas = getCanvas();
+  if(!canvas || !renderImg) return;
+  const W = canvas.width, H = canvas.height;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0,0,W,H);
+  // Draw photo
+  ctx.drawImage(renderImg, 0, 0, W, H);
+  // Draw each neon line
+  renderLines.forEach((l,i) => drawNeonLine(ctx, l, W, H, glowColor));
+}
+
+function drawNeonLine(ctx, l, W, H, gc) {
+  const x1=l.x1*W, y1=l.y1*H, x2=l.x2*W, y2=l.y2*H;
+  const layers = [[50,0.05],[30,0.10],[16,0.22],[8,0.45],[4,0.72],[2,0.88],[1,0.95]];
+  layers.forEach(([lw,alpha]) => {
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2);
+    ctx.strokeStyle=`rgba(${gc},${alpha})`;
+    ctx.lineWidth=lw; ctx.lineCap='round'; ctx.stroke();
+  });
+  // White hot core
+  ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2);
+  ctx.strokeStyle='rgba(255,255,255,0.97)';
+  ctx.lineWidth=0.8; ctx.lineCap='round'; ctx.stroke();
+}
+
+// Hit test — returns {lineIdx, end} or null
+function hitTest(px, py, W, H) {
+  const HIT = 12; // pixels tolerance
+  for(let i=renderLines.length-1; i>=0; i--) {
+    const l = renderLines[i];
+    const x1=l.x1*W, y1=l.y1*H, x2=l.x2*W, y2=l.y2*H;
+    // Check endpoints first
+    if(Math.hypot(px-x1,py-y1)<HIT+4) return {lineIdx:i, end:'start'};
+    if(Math.hypot(px-x2,py-y2)<HIT+4) return {lineIdx:i, end:'end'};
+    // Check line body
+    const len = Math.hypot(x2-x1,y2-y1);
+    if(len<1) continue;
+    const t = ((px-x1)*(x2-x1)+(py-y1)*(y2-y1))/(len*len);
+    if(t<0||t>1) continue;
+    const dist = Math.abs((y2-y1)*px-(x2-x1)*py+x2*y1-y2*x1)/len;
+    if(dist<HIT) return {lineIdx:i, end:'whole', ox:px, oy:py};
+  }
+  return null;
+}
+
+function canvasPos(canvas, e) {
+  const r = canvas.getBoundingClientRect();
+  const scaleX = canvas.width/r.width;
+  const scaleY = canvas.height/r.height;
+  const src = e.touches ? e.touches[0] : e;
+  return {x:(src.clientX-r.left)*scaleX, y:(src.clientY-r.top)*scaleY};
+}
+
+function setupCanvasEvents() {
+  const canvas = getCanvas();
+  if(!canvas) return;
+
+  function onDown(e) {
+    e.preventDefault();
+    const {x,y} = canvasPos(canvas,e);
+    const hit = hitTest(x,y,canvas.width,canvas.height);
+    if(hit) {
+      dragState = {...hit, startX:x, startY:y, origLine:{...renderLines[hit.lineIdx]}};
+      canvas.style.cursor='grabbing';
+    }
+  }
+
+  function onMove(e) {
+    e.preventDefault();
+    if(!dragState) {
+      // Hover cursor
+      const {x,y} = canvasPos(canvas,e);
+      const hit = hitTest(x,y,canvas.width,canvas.height);
+      canvas.style.cursor = hit ? (hit.end==='whole'?'grab':'ew-resize') : 'default';
+      return;
+    }
+    const {x,y} = canvasPos(canvas,e);
+    const W=canvas.width, H=canvas.height;
+    const dx=(x-dragState.startX)/W, dy=(y-dragState.startY)/H;
+    const orig = dragState.origLine;
+    const l = renderLines[dragState.lineIdx];
+
+    if(dragState.end==='start') {
+      l.x1 = Math.max(0,Math.min(1,orig.x1+dx));
+      l.y1 = Math.max(0,Math.min(1,orig.y1+dy));
+    } else if(dragState.end==='end') {
+      l.x2 = Math.max(0,Math.min(1,orig.x2+dx));
+      l.y2 = Math.max(0,Math.min(1,orig.y2+dy));
+    } else {
+      l.x1 = Math.max(0,Math.min(1,orig.x1+dx));
+      l.y1 = Math.max(0,Math.min(1,orig.y1+dy));
+      l.x2 = Math.max(0,Math.min(1,orig.x2+dx));
+      l.y2 = Math.max(0,Math.min(1,orig.y2+dy));
+    }
+    redraw();
+  }
+
+  function onUp(e) {
+    dragState = null;
+    canvas.style.cursor='default';
+  }
+
+  canvas.addEventListener('mousedown', onDown);
+  canvas.addEventListener('mousemove', onMove);
+  canvas.addEventListener('mouseup', onUp);
+  canvas.addEventListener('mouseleave', onUp);
+  canvas.addEventListener('touchstart', onDown, {passive:false});
+  canvas.addEventListener('touchmove', onMove, {passive:false});
+  canvas.addEventListener('touchend', onUp);
+}
+
+function undoLine() {
+  if(renderLines.length>0) { renderLines.pop(); redraw(); }
+}
+
+function clearLines() {
+  renderLines = []; redraw();
+}
+
+async function doRender() {
+  if(!lastPhoto || !cfg.serie || !cfg.cct) {
+    addMsg('nav','Necesito foto del espacio y configuración completa.');
+    return;
+  }
+  const btn = document.getElementById('btnRender');
+  const regen = document.getElementById('regenBtn');
+  const cap = document.getElementById('renderCaption');
+  if(btn) { btn.disabled=true; btn.textContent='⏳ Generando...'; }
+  if(regen) regen.style.opacity='0.4';
+
+  if(true) { // render fotorrealista siempre via proxy Netlify
+    // ── PHOTOREALISTIC with fal.ai ──
+    try {
+      document.getElementById('renderPreview').style.display = 'block';
+      if(cap) cap.textContent = '⏳ Analizando espacio...';
+
+      // Step 1: Claude analyzes placement
+      const ar = await fetch('/api/anthropic-proxy',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:120,
+          messages:[{role:'user',content:[
+            {type:'image',source:{type:'base64',media_type:lastPhoto.mt,data:lastPhoto.b64}},
+            {type:'text',text:'Describe in 1-2 short English sentences exactly where LED neon strips would look best in this image. Be very specific about surfaces (e.g. "along the top edge of the wooden bar", "under the roof overhang cornice").'}
+          ]}]
+        })
+      });
+      const ad = await ar.json();
+      const placement = ad.content.map(b=>b.text||'').join('').trim();
+      if(cap) cap.textContent = '⏳ Generando imagen fotorrealista...';
+
+      const cctLabel = {'1800K':'warm amber candlelight neon','2200K':'warm golden neon','2700K':'warm white neon','3000K':'neutral warm white neon','4000K':'neutral white neon','5700K':'cool white neon','RGB':'RGB multicolor neon','RGBW':'RGBW color neon'}[cfg.cct]||cfg.cct+' neon';
+      const prompt = `Keep the photograph EXACTLY as it is. Only add thin glowing ${cctLabel} LED flex strip lights mounted on the surfaces described here: ${placement}. The neon strips should glow with realistic soft bloom light effect, physically attached to the existing surfaces. Do NOT change anything else in the image — same architecture, same lighting, same people, same objects. Only add the neon LED strips.`;
+
+      // Step 2: llamar al proxy de Netlify (mantiene la FAL_KEY en el servidor)
+      const fr = await fetch('/api/fal-proxy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          endpoint: 'https://fal.run/fal-ai/flux-kontext/dev',
+          payload: {
+            image_url: lastPhoto.du,
+            prompt: prompt,
+            num_inference_steps: 28,
+            guidance_scale: 2.5,
+            num_images: 1,
+            output_format: 'jpeg'
+          }
+        })
+      });
+
+      if(!fr.ok) throw new Error('Proxy error '+fr.status+': '+(await fr.text()).slice(0,150));
+      const fd = await fr.json();
+      if(fd.error) throw new Error(fd.error);
+      const imgUrl = fd.images?.[0]?.url || fd.image?.url;
+      if(!imgUrl) throw new Error('No se recibió imagen de fal.ai. Respuesta: '+JSON.stringify(fd).slice(0,150));
+
+      // Show result on canvas
+      const canvas = getCanvas();
+      const img = new Image();
+      img.crossOrigin='anonymous';
+      img.onload = () => {
+        renderImg = img; renderLines = [];
+        const maxW=600, scale=Math.min(1,maxW/img.naturalWidth);
+        canvas.width=Math.round(img.naturalWidth*scale);
+        canvas.height=Math.round(img.naturalHeight*scale);
+        const ctx=canvas.getContext('2d');
+        ctx.drawImage(img,0,0,canvas.width,canvas.height);
+        if(cap) cap.textContent='Render fotorrealista IA · '+cctLabel;
+      };
+      img.src = imgUrl;
+      addMsg('nav',`✦ Render fotorrealista generado — <strong>${ND[cfg.serie].name} ${cfg.cct}</strong>. Descárgalo o inclúyelo en el presupuesto PDF.`);
+
+    } catch(e) {
+      addMsg('nav',`⚠️ Error fal.ai: ${e.message}. Usando simulación con líneas.`);
+      await doRenderLines();
+    }
+
+  } else {
+    // ── LINE DRAWING fallback ──
+    await doRenderLines();
+  }
+
+  if(btn) { btn.disabled=false; btn.textContent='✦ Simular en mi espacio'; }
+  if(regen) regen.style.opacity='1';
+}
+
+async function doRenderLines() {
+  const cap = document.getElementById('renderCaption');
+  try {
+    const res = await fetch('/api/anthropic-proxy',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:300,
+        messages:[{role:'user',content:[
+          {type:'image',source:{type:'base64',media_type:lastPhoto.mt,data:lastPhoto.b64}},
+          {type:'text',text:'Analyze this image. Return ONLY JSON with coordinates for LED neon strips: {"lines":[{"x1":0.05,"y1":0.12,"x2":0.92,"y2":0.12,"label":"element"}],"placement":"brief description"}. Use real visual measurements for y values (0=top, 1=bottom). 2-4 lines at different heights.'}
+        ]}]
+      })
+    });
+    const data = await res.json();
+    const raw = data.content.map(b=>b.text||'').join('').trim();
+    let rd;
+    try { const m=raw.match(/\{[\s\S]*\}/); rd=JSON.parse(m?m[0]:raw); if(!rd.lines?.length) throw 0; }
+    catch(e) { rd={lines:[{x1:0.05,y1:0.12,x2:0.92,y2:0.12,label:'cornisa'},{x1:0.05,y1:0.78,x2:0.92,y2:0.78,label:'zocalo'}],placement:'posicionamiento estimado'}; }
+
+    renderLines=rd.lines; glowColor=NEON_GLOW[cfg.cct]||'255,195,90';
+    const canvas=getCanvas();
+    document.getElementById('renderPreview').style.display='block';
+    const img=new Image();
+    img.onload=()=>{
+      renderImg=img;
+      const maxW=600,scale=Math.min(1,maxW/img.naturalWidth);
+      canvas.width=Math.round(img.naturalWidth*scale);
+      canvas.height=Math.round(img.naturalHeight*scale);
+      setupCanvasEvents(); redraw();
+      if(cap) cap.textContent=(rd.placement||'neón posicionado')+' · arrastra para ajustar';
+    };
+    img.src=lastPhoto.du;
+    addMsg('nav','✦ Simulación lista — arrastra las líneas para ajustar posición exacta.');
+  } catch(e) { addMsg('nav','⚠️ Error: '+e.message); }
+}
+
+function downloadRender() {
+  const canvas = getCanvas();
+  if(!canvas) return;
+  if(!renderLines.length && renderImg) {
+    // Photorealistic — export canvas directly
+    const a=document.createElement('a');
+    a.download='navigator-neon-render.jpg';
+    a.href=canvas.toDataURL('image/jpeg',0.93);
+    a.click(); return;
+  }
+  if(!renderImg) return;
+  const out=document.createElement('canvas');
+  out.width=renderImg.naturalWidth; out.height=renderImg.naturalHeight;
+  const ctx=out.getContext('2d');
+  ctx.drawImage(renderImg,0,0);
+  renderLines.forEach(l=>drawNeonLine(ctx,l,out.width,out.height,glowColor));
+  const a=document.createElement('a');
+  a.download='navigator-neon-simulacion.jpg';
+  a.href=out.toDataURL('image/jpeg',0.93);
+  a.click();
+}
+
+// ════════════════════════════════════════════
+// RESET
+// ════════════════════════════════════════════
+// RESET
+// ════════════════════════════════════════════
+
+// ════════════════════════════════════════════
+// DRIVERS — Catálogo Navigator 2026
+// ════════════════════════════════════════════
+// Fuentes Faraday IP20 (interior) y IP67 (exterior)
+const DRIVERS = {
+  ip20: [
+    {ref:'83962', w:60,  pvp:19.90},
+    {ref:'83963', w:100, pvp:26.90},
+    {ref:'83964', w:150, pvp:38.90},
+    {ref:'83965', w:250, pvp:45.90},
+  ],
+  ip67: [
+    {ref:'83966', w:60,  pvp:22.90},
+    {ref:'83967', w:100, pvp:31.90},
+    {ref:'83968', w:150, pvp:42.90},
+    {ref:'83969', w:250, pvp:49.90},
+  ]
+};
+
+function selectDriver(wattsTotal, exterior) {
+  const list = exterior ? DRIVERS.ip67 : DRIVERS.ip20;
+  const needed = wattsTotal * 1.2; // 20% margen de seguridad
+  // Find smallest driver that covers the load
+  const driver = list.find(d => d.w >= needed) || list[list.length-1];
+  const qty = Math.ceil(wattsTotal / driver.w);
+  return {driver, qty, total: driver.pvp * qty};
+}
+
+// ════════════════════════════════════════════
+// PDF BUDGET
+// ════════════════════════════════════════════
+function printBudget() {
+  if(!cfg.serie||!cfg.cct||!cfg.metros) {
+    addMsg('nav','Necesito tener la serie, temperatura y metros para generar el presupuesto.');
+    return;
+  }
+  const d=ND[cfg.serie], m=cfg.metros, ref=d.refs[cfg.cct]||Object.values(d.refs)[0];
+  const pm=pvpM(cfg.serie,cfg.cct);
+  const pot=Math.round(d.watts*m);
+  const exterior = ['forza','halo'].includes(cfg.serie);
+  const accs=getAccs(cfg.serie,m).filter(a=>!a.opt);
+  const tNeon=pm?pm*m:0;
+  const tAcc=accs.filter(a=>a.total).reduce((s,a)=>s+a.total,0);
+
+  // Driver calculation
+  let driverHtml='', driverTotal=0;
+  if(d.v !== '230V') {
+    const {driver, qty, total} = selectDriver(pot, exterior);
+    driverTotal = total;
+    driverHtml = `<tr>
+      <td>${driver.ref}</td>
+      <td><strong>Fuente alimentación 24V ${driver.w}W · ${exterior?'IP67 estanca':'IP20 compacta'}</strong><br>
+      <span style="font-size:10px;color:#666">Garantía 5 años · Faraday Navigator · Margen seguridad 20%</span></td>
+      <td class="r">${qty} ud.</td>
+      <td class="r">${driver.pvp.toFixed(2).replace('.',',')} €</td>
+      <td class="r">${total.toFixed(2).replace('.',',')} €</td>
+    </tr>`;
+  } else {
+    driverHtml = `<tr>
+      <td>—</td>
+      <td><em>Sin fuente de alimentación — Vira 230V conecta directamente a la red</em></td>
+      <td class="r">—</td><td class="r">—</td><td class="r">0,00 €</td>
+    </tr>`;
+  }
+
+  const tBase=tNeon+tAcc+driverTotal;
+  const iva=tBase*0.21;
+  const tIva=tBase+iva;
+
+  const today=new Date();
+  const ds=today.toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'});
+  const num='NAV-'+today.getFullYear()+String(today.getMonth()+1).padStart(2,'0')+String(today.getDate()).padStart(2,'0');
+
+  // Render image
+  let renderImgHtml='';
+  const canvas=document.getElementById('renderCanvas');
+  const rb=document.getElementById('renderBase');
+  if(canvas&&rb&&rb.src&&rb.src!==window.location.href&&rb.naturalWidth>0) {
+    try {
+      const out=document.createElement('canvas');
+      out.width=rb.naturalWidth||800; out.height=rb.naturalHeight||600;
+      const ctx=out.getContext('2d');
+      ctx.drawImage(rb,0,0,out.width,out.height);
+      if(renderLines.length) renderLines.forEach(l=>drawNeonLine(ctx,l,out.width,out.height,glowColor));
+      renderImgHtml=`<div class="bp-render"><img src="${out.toDataURL('image/jpeg',0.88)}"><div class="bp-render-cap">Simulación visual · Navigator ${d.name} ${cfg.cct}</div></div>`;
+    } catch(e){}
+  }
+
+  const accRows=accs.map(a=>`<tr>
+    <td>${a.ref}</td><td>${a.desc} · ${a.qty2} ${a.unit}</td>
+    <td class="r">${a.qty2} ud.</td>
+    <td class="r">${a.pvp?a.pvp.toFixed(2).replace('.',',')+'€':'—'}</td>
+    <td class="r">${a.total?a.total.toFixed(2).replace('.',',')+'€':'consultar'}</td>
+  </tr>`).join('');
+
+  document.getElementById('budgetPrint').innerHTML=`
+    <div class="bp-hdr">
+      <div>
+        <div class="bp-logo">Na<span>v</span>igator</div>
+        <div class="bp-meta">Navigator Lighting Spain<br>C/ Paraguay, parcelas 8.2 y 8.3 · Polígono Industrial · 30820 Alcantarilla (Murcia)<br>info@navigator-light.es · navigator-light.es</div>
+      </div>
+      <div>
+        <div class="bp-num">PRESUPUESTO</div>
+        <div class="bp-meta" style="text-align:right">Nº ${num}<br>Fecha: ${ds}<br>Válido 30 días<br><em>Precios PVP Catálogo 2026</em></div>
+      </div>
+    </div>
+
+    ${renderImgHtml}
+
+    <div class="bp-section-title">Propuesta técnica — ${d.name} ${cfg.cct}</div>
+    <div class="bp-specs">
+      <div class="bp-spec"><span class="bp-spec-l">Serie / Referencia</span><span class="bp-spec-v">${d.name} · ${ref}</span></div>
+      <div class="bp-spec"><span class="bp-spec-l">Temperatura de color</span><span class="bp-spec-v">${cfg.cct}</span></div>
+      <div class="bp-spec"><span class="bp-spec-l">Tensión</span><span class="bp-spec-v">${d.v}</span></div>
+      <div class="bp-spec"><span class="bp-spec-l">IP / IK</span><span class="bp-spec-v">${d.ip} · ${d.ik||'—'}</span></div>
+      <div class="bp-spec"><span class="bp-spec-l">SDCM</span><span class="bp-spec-v">SDCM3 · declarado en ficha</span></div>
+      <div class="bp-spec"><span class="bp-spec-l">CRI</span><span class="bp-spec-v">>90 Ra</span></div>
+      <div class="bp-spec"><span class="bp-spec-l">Potencia instalada</span><span class="bp-spec-v">${d.watts}W/m · Total ${pot}W</span></div>
+      <div class="bp-spec"><span class="bp-spec-l">Servicio</span><span class="bp-spec-v">A metro · Sellado de fábrica · Desde 1m</span></div>
+      <div class="bp-spec"><span class="bp-spec-l">Vida útil</span><span class="bp-spec-v">50.000 horas</span></div>
+      <div class="bp-spec"><span class="bp-spec-l">Garantía</span><span class="bp-spec-v">5 años</span></div>
+    </div>
+
+    <div class="bp-section-title">Lista de materiales</div>
+    <table class="bp-table">
+      <thead><tr>
+        <th class="y">Ref.</th><th>Descripción</th>
+        <th style="text-align:right">Cant.</th>
+        <th style="text-align:right">€/ud.</th>
+        <th style="text-align:right">Total</th>
+      </tr></thead>
+      <tbody>
+        <tr>
+          <td>${ref}</td>
+          <td><strong>${d.name} ${cfg.cct}</strong> · ${d.w} · ${d.ip} · ${m}m · Sellado de fábrica · SDCM3 · CRI>90</td>
+          <td class="r">${m} m</td>
+          <td class="r">${pm?pm.toFixed(2).replace('.',',')+'€':'—'}</td>
+          <td class="r">${pm?(pm*m).toFixed(2).replace('.',',')+'€':'consultar'}</td>
+        </tr>
+        ${driverHtml}
+        ${accRows}
+      </tbody>
+    </table>
+    <div class="bp-sub"><span>Subtotal sin IVA</span><strong>${tBase.toFixed(2).replace('.',',')} €</strong></div>
+    <div class="bp-sub"><span>IVA 21%</span><span>${iva.toFixed(2).replace('.',',')} €</span></div>
+    <div class="bp-total">
+      <div class="bp-total-l">TOTAL CON IVA (21%)</div>
+      <div class="bp-total-v">${tIva.toFixed(2).replace('.',',')} €</div>
+    </div>
+    <div class="bp-footer">
+      Presupuesto orientativo · Precios PVP Catálogo Navigator 2026 sin descuento comercial · Sujeto a disponibilidad de stock ·
+      Para condiciones especiales, rappel o grandes proyectos contacte con su comercial Navigator ·
+      Navigator Lighting Spain · info@navigator-light.es · navigator-light.es · Crea, define y transforma.
+    </div>`;
+
+  window.print();
+}
+
+function resetAll() {
+  cfg={serie:null,cct:null,metros:null};
+  history.length=0;
+  lastPhoto=null; pendingPhoto=null;
+  document.getElementById('messages').innerHTML='';
+  updateSidebar();
+  init();
+}
+
+// ════════════════════════════════════════════
+// SYSTEM PROMPT
+// ════════════════════════════════════════════
+function systemPrompt() {
+  return `Eres el asistente de configuración de neones de NAVIGATOR LIGHTING SPAIN (Alcantarilla, Murcia).
+
+SERIES DISPONIBLES:
+- tetra3d: formas 3D, logotipos, rótulos, flexión bidireccional, 1800K–4000K
+- vira: 230V SIN DRIVER, reformas, fachadas largas, 2700K/4000K [EXCLUSIVO]
+- cube: RGB, escaparates, baldas, temperatura 5700K, 2200K–RGB
+- slot: EMPOTRADO en encimeras/baldas/escaleras [EXCLUSIVO]
+- pix: DMX512, fachadas dinámicas, discotecas [EXCLUSIVO]
+- dark: CUERPO NEGRO, barras negras, superficies oscuras [EXCLUSIVO]
+- apex: ESQUINAS Y ARISTAS 90°, cantos de mueble [EXCLUSIVO]
+- forza: SUELO TRANSITABLE, escaleras, jardines [EXCLUSIVO]
+- halo: emisión 360°, colgantes circulares
+- tetra: frontal estándar Cree, rótulos, foseados, 2700K–4000K
+
+PRECIOS PVP €/m (catálogo 2026, sin IVA):
+tetra3d:31,90 · vira:39,90 · cube_mono:33,90 · cube_rgb:44,90 · slot:33,90 · pix:84,90 · dark:40,00 · apex:34,90 · tetra:33,48 · halo:31,56 · forza:consultar
+
+TEMPERATURAS: 1800K=vela/lujo · 2200K=muy cálido · 2700K=cálido · 3000K=neutro cálido · 4000K=neutro frío · 5700K=frío extremo · RGB=color
+
+REGLAS DE SELECCIÓN:
+negro/oscuro→dark | sin driver/230V→vira | empotrar/encimera→slot | esquina/arista→apex | suelo/pisable→forza | dmx/consola→pix | 360°/colgante→halo | 3d/logotipo→tetra3d | rgb/color→cube | resto→tetra
+
+REGLAS DE RESPUESTA:
+1. Responde SIEMPRE en español, máximo 3 frases, directo.
+2. Cuando tengas serie+temperatura+metros, añade AL FINAL: CONFIG:{"serie":"x","cct":"y","metros":z}
+3. Si falta algún dato, pregunta SOLO una cosa.
+4. NUNCA inventes que confirmas pedidos, que llamas a comerciales ni que tienes sistemas externos.
+5. Tú SÍ tienes los precios del catálogo 2026 — úsalos directamente.
+6. La simulación visual y el presupuesto PDF los genera la app automáticamente — no los menciones como tareas tuyas.`;
+}
+
+// ════════════════════════════════════════════
+// API CALL
+// ════════════════════════════════════════════
+async function callClaude(text, photo) {
+  let content;
+  if(photo) {
+    content=[
+      {type:'image',source:{type:'base64',media_type:photo.mt,data:photo.b64}},
+      {type:'text',text:text||'Analiza este espacio y recomienda la serie de neón Navigator más adecuada.'}
+    ];
+  } else {
+    content=text;
+  }
+
+  const messages = photo
+    ? [{role:'user',content}]
+    : [...history,{role:'user',content}];
+
+  const res=await fetch('/api/anthropic-proxy',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:800,system:systemPrompt(),messages})
+  });
+
+  if(!res.ok) throw new Error('API error '+res.status);
+  const data=await res.json();
+  const out=data.content.map(b=>b.text||'').join('');
+  history.push({role:'user',content:photo?'[foto] '+(text||''):text});
+  history.push({role:'assistant',content:out});
+  return out;
+}
+
+// ════════════════════════════════════════════
+// SEND
+// ════════════════════════════════════════════
+async function sendMessage() {
+  const box=document.getElementById('inputBox');
+  const text=box.value.trim();
+  if(isLoading) return;
+  // Keys gestionadas server-side — sin validación client-side necesaria
+  if(!text&&!pendingPhoto) return;
+
+  box.value=''; box.style.height='auto';
+  isLoading=true;
+  document.getElementById('sendBtn').disabled=true;
+
+  let userHtml=text;
+  if(pendingPhoto) userHtml=`<img class="msg-img" src="${pendingPhoto.du}"><br>${text||'<em style="color:var(--muted)">Analizando foto...</em>'}`;
+  addMsg('usr',userHtml);
+  showTyping();
+
+  const photo=pendingPhoto;
+  removePhoto();
+
+  try {
+    const raw=await callClaude(text,photo);
+    removeTyping();
+
+    // Parse CONFIG
+    const m=raw.match(/CONFIG:(\{[^}]+\})/);
+    if(m) {
+      try {
+        const c=JSON.parse(m[1]);
+        if(c.serie&&ND[c.serie]) cfg.serie=c.serie;
+        if(c.cct) cfg.cct=c.cct;
+        if(c.metros&&!isNaN(c.metros)) cfg.metros=parseInt(c.metros);
+        updateSidebar();
+      } catch(e){}
+    }
+
+    // Display text
+    let disp=raw.replace(/CONFIG:\{[^}]+\}/,'').trim()
+      .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
+      .replace(/_(.*?)_/g,'<em>$1</em>');
+
+    // Suggest chips
+    let chips=[];
+    if(!cfg.serie||!cfg.cct) chips=['1.800K muy cálido','2.700K cálido','4.000K neutro','RGB color'];
+    else if(!cfg.metros) chips=['3 metros','5 metros','10 metros','20 metros','30 metros'];
+
+    addMsg('nav',disp,chips);
+    updateSidebar();
+
+  } catch(e) {
+    removeTyping();
+    addMsg('nav',`⚠️ Error: ${e.message}. Si el problema persiste contacta con el administrador.`);
+  }
+
+  isLoading=false;
+  document.getElementById('sendBtn').disabled=false;
+}
+
+function sendChip(t){document.getElementById('inputBox').value=t;sendMessage();}
+
+function handleKey(e) {
+  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}
+  const b=e.target; b.style.height='auto'; b.style.height=Math.min(b.scrollHeight,100)+'px';
+}
+
+// ════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════
+function init() {
+  addMsg('nav',
+    '¡Hola! Soy el configurador de neones Navigator. Describe tu proyecto y te recomendaré la serie correcta, con el presupuesto desglosado en el panel derecho.<br><br>También puedes subir una <strong>foto del espacio</strong> con 📷 para ver cómo quedaría el neón instalado.',
+    ['Barra de bar negra cálido','Foseado sin driver 230V','Empotrar en encimera','Suelo transitable jardín','Rótulo con RGB','Esquinas de mueble']
+  );
+  updateSidebar();
+}
+
+window.addEventListener('load', init);
+</script>
+</body>
+</html>
