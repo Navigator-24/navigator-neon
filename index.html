@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -318,6 +320,7 @@ let pendingPhoto = null;
 let lastPhoto = null;
 let isLoading = false;
 let cfg = {serie:null, cct:null, metros:null};
+let lineas = []; // líneas confirmadas del presupuesto multilinea
 const history = [];
 
 function pvpM(serie, cct) {
@@ -411,126 +414,158 @@ function removeTyping(){const t=document.getElementById('typing');if(t)t.remove(
 // ════════════════════════════════════════════
 // SIDEBAR RENDER
 // ════════════════════════════════════════════
+
+// ════════════════════════════════════════════
+// LÍNEAS MULTILINEA — gestión del presupuesto
+// ════════════════════════════════════════════
+function calcLineaTotals(linea) {
+  const d = ND[linea.serie];
+  const ref = d.refs[linea.cct] || Object.values(d.refs)[0];
+  const pm = pvpM(linea.serie, linea.cct);
+  const metros = linea.metros;
+  const totalNeon = pm ? pm*metros : 0;
+
+  const accs = getAccs(linea.serie, metros);
+  const oblAcc = accs.filter(a=>!a.opt);
+  const totalAcc = oblAcc.filter(a=>a.total).reduce((s,a)=>s+a.total,0);
+
+  let totalDriver = 0, driverInfo = null;
+  if(d.v !== '230V') {
+    const exterior = ['forza','halo'].includes(linea.serie);
+    const {driver, qty, total} = selectDriver(Math.round(d.watts*metros), exterior);
+    totalDriver = total;
+    driverInfo = {driver, qty, total, exterior};
+  }
+
+  const subtotal = totalNeon + totalAcc + totalDriver;
+  return {d, ref, pm, metros, totalNeon, totalAcc, totalDriver, driverInfo, subtotal, accs: oblAcc};
+}
+
+function addLinea(linea) {
+  lineas.push(linea);
+  addMsg('nav', `<strong>✓ Línea añadida al presupuesto:</strong> ${ND[linea.serie].name} ${linea.cct} · ${linea.metros}m. ¿Necesitas algo más para este proyecto, o generamos el presupuesto?`,
+    ['Generar presupuesto PDF','Añadir otra línea','Simular en mi espacio']);
+}
+
+function removeLinea(idx) {
+  lineas.splice(idx,1);
+  updateSidebar();
+}
+
+function calcGrandTotal() {
+  let totalNeon=0, totalAcc=0, totalDriver=0;
+  lineas.forEach(l => {
+    const t = calcLineaTotals(l);
+    totalNeon += t.totalNeon;
+    totalAcc += t.totalAcc;
+    totalDriver += t.totalDriver;
+  });
+  const subtotal = totalNeon+totalAcc+totalDriver;
+  const iva = subtotal*0.21;
+  return {totalNeon, totalAcc, totalDriver, subtotal, iva, total: subtotal+iva};
+}
+
 function updateSidebar() {
   const body = document.getElementById('sidebarBody');
   const st = document.getElementById('sbStatus');
 
-  if(!cfg.serie) {
+  const hayLineasConfirmadas = lineas.length > 0;
+  const hayLineaEnCurso = cfg.serie || cfg.cct || cfg.metros;
+
+  if(!hayLineasConfirmadas && !hayLineaEnCurso) {
     st.textContent='ESPERANDO';
-    body.innerHTML='<div class="sb-empty">Describe tu proyecto en el chat.<br><br>El presupuesto se irá completando aquí en tiempo real.</div>';
+    body.innerHTML='<div class="sb-empty">Describe tu proyecto en el chat.<br><br>El presupuesto se irá completando aquí en tiempo real. Puedes añadir varias series al mismo presupuesto.</div>';
     return;
   }
 
-  const d = ND[cfg.serie];
-  const ref = cfg.cct ? (d.refs[cfg.cct]||Object.values(d.refs)[0]) : '—';
-  const pm = cfg.cct ? pvpM(cfg.serie, cfg.cct) : null;
-  const metros = cfg.metros;
+  st.textContent = hayLineasConfirmadas ? `${lineas.length} LÍNEA${lineas.length>1?'S':''}` : 'EN CURSO';
 
-  // Calculate totals
-  let totalNeon=0, totalAcc=0, totalDriver=0, accsHtml='';
-  if(metros && cfg.cct) {
-    totalNeon = pm ? pm*metros : 0;
-    const accs = getAccs(cfg.serie, metros);
-    const oblAcc = accs.filter(a=>!a.opt);
-    totalAcc = oblAcc.filter(a=>a.total).reduce((s,a)=>s+a.total,0);
-    // Driver cost
-    if(d.v !== '230V') {
-      const exterior = ['forza','halo'].includes(cfg.serie);
-      const {total: dt} = selectDriver(Math.round(d.watts*metros), exterior);
-      totalDriver = dt;
-    }
-    const totalBase = totalNeon+totalAcc+totalDriver;
-    const iva = totalBase*0.21;
+  let html = '';
 
-    // Accessories rows
-    const driverRow = d.v!=='230V' && metros ? (() => {
-      const exterior = ['forza','halo'].includes(cfg.serie);
-      const {driver, qty, total} = selectDriver(Math.round(d.watts*metros), exterior);
-      return `<tr><td><span class="mat-ref">${driver.ref}</span><div class="mat-desc">Fuente 24V ${driver.w}W · ${exterior?'IP67':'IP20'} · ${qty} ud.</div></td><td>${total.toFixed(2).replace('.',',')}€</td></tr>`;
-    })() :
-      `<tr><td><span class="mat-ref" style="color:var(--green)">✓ SIN DRIVER</span><div class="mat-desc" style="color:var(--green)">230V directo a red</div></td><td style="color:var(--green)">—</td></tr>`;
+  // ── Líneas confirmadas ──
+  if(hayLineasConfirmadas) {
+    html += `<div class="sb-section"><div class="sb-section-title">Presupuesto · ${lineas.length} línea${lineas.length>1?'s':''}</div>`;
+    lineas.forEach((l, idx) => {
+      const t = calcLineaTotals(l);
+      html += `
+      <div class="sb-series-block" style="position:relative;margin-bottom:8px;">
+        <button onclick="removeLinea(${idx})" title="Eliminar línea" style="position:absolute;top:8px;right:8px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;line-height:1;padding:2px 6px;">✕</button>
+        <div class="sb-series-name" style="font-size:18px;">${t.d.name} · ${l.cct}</div>
+        <div class="sb-series-sub">${l.metros}m · ${t.d.w} · ${t.subtotal.toFixed(2).replace('.',',')} €</div>
+      </div>`;
+    });
+    html += `</div>`;
+  }
 
-    const sealedRow = `<tr><td><span class="mat-ref" style="color:var(--green)">✓ SELLADO</span><div class="mat-desc" style="color:var(--green)">Fábrica · tapas incluidas</div></td><td style="color:var(--green)">Incluido</td></tr>`;
+  // ── Línea en curso (sin confirmar aún) ──
+  if(hayLineaEnCurso) {
+    const d = cfg.serie ? ND[cfg.serie] : null;
+    const pm = (cfg.serie && cfg.cct) ? pvpM(cfg.serie, cfg.cct) : null;
+    html += `<div class="sb-section">
+      <div class="sb-section-title">Configurando ahora</div>
+      <div class="sb-series-block" style="border-style:dashed;">
+        ${d ? `<div class="sb-series-name">${d.name}</div><div class="sb-series-sub">${d.w} · ${d.ip} · ${d.v}${d.excl?' · ✦ Exclusivo':''}</div>` : '<div class="sb-empty" style="padding:4px 0;text-align:left;">Esperando serie...</div>'}
+      </div>
+      ${cfg.cct?`<div class="sb-row"><span class="sb-label">Temperatura</span><span class="sb-val y">${cfg.cct}</span></div>`:''}
+      ${cfg.metros?`<div class="sb-row"><span class="sb-label">Metros</span><span class="sb-val y">${cfg.metros} m exactos</span></div>`:''}
+      ${(cfg.metros && d)?`<div class="sb-row"><span class="sb-label">Potencia</span><span class="sb-val">${Math.round(d.watts*cfg.metros)} W</span></div>`:''}
+      ${pm?`<div class="sb-row"><span class="sb-label">€/metro</span><span class="sb-val">${pm.toFixed(2).replace('.',',')} €</span></div>`:''}
+    </div>`;
+  }
 
-    const accRows = oblAcc.map(a=>`<tr>
-      <td><span class="mat-ref">${a.ref}</span><div class="mat-desc">${a.desc} · ${a.qty2} ${a.unit}</div></td>
-      <td>${a.total?a.total.toFixed(2).replace('.',',')+'€':'consultar'}</td>
-    </tr>`).join('');
+  // ── Especificaciones técnicas (de la última línea confirmada o en curso) ──
+  const refLinea = hayLineaEnCurso && cfg.serie ? cfg : (lineas.length ? lineas[lineas.length-1] : null);
+  if(refLinea) {
+    html += `<div class="sb-section">
+      <div class="sb-section-title">Especificaciones técnicas</div>
+      <div class="sb-row"><span class="sb-label">SDCM</span><span class="sb-val y">3 · declarado</span></div>
+      <div class="sb-row"><span class="sb-label">CRI</span><span class="sb-val y">>90 Ra</span></div>
+      <div class="sb-row"><span class="sb-label">Garantía</span><span class="sb-val y">5 años</span></div>
+      <div class="sb-row"><span class="sb-label">Sellado</span><span class="sb-val g">Fábrica · listo</span></div>
+    </div>`;
+  }
 
-    accsHtml = `
-    <div class="sb-section">
-      <div class="sb-section-title">Lista de materiales</div>
-      <table class="mat-table">
-        <thead><tr><th>Producto</th><th>Total</th></tr></thead>
-        <tbody>
-          <tr>
-            <td><span class="mat-ref">${ref}</span><div class="mat-desc">${d.name} ${cfg.cct||''} · ${d.w} · ${metros}m exactos</div></td>
-            <td>${pm?(pm*metros).toFixed(2).replace('.',',')+'€':'consultar'}</td>
-          </tr>
-          ${driverRow}${sealedRow}${accRows}
-        </tbody>
-      </table>
+  // ── Total general + acciones ──
+  if(hayLineasConfirmadas) {
+    const gt = calcGrandTotal();
+    html += `<div class="sb-section">
       <div class="total-row">
         <div>
           <div class="total-label">SUBTOTAL SIN IVA</div>
-          <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);margin-top:2px">+ IVA 21% = ${(totalBase*1.21).toFixed(2).replace('.',',')} €</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);margin-top:2px">+ IVA 21% = ${gt.total.toFixed(2).replace('.',',')} €</div>
         </div>
-        <div class="total-val">${totalBase.toFixed(2).replace('.',',')} €</div>
+        <div class="total-val">${gt.subtotal.toFixed(2).replace('.',',')} €</div>
       </div>
     </div>
 
     <div class="sb-actions">
       <button class="btn-pdf" onclick="printBudget()">🖨 Presupuesto PDF</button>
-      <button class="btn-render" id="btnRender" onclick="doRender()">
-        ✦ Simular en mi espacio
-      </button>
+      <button class="btn-render" id="btnRender" onclick="doRender()">✦ Simular en mi espacio</button>
       <button class="btn-reset" onclick="resetAll()">Nueva configuración</button>
     </div>`;
 
-    // Update render button state after DOM update
     setTimeout(() => {
       const btn = document.getElementById('btnRender');
       if(btn) {
         if(lastPhoto) {
-          btn.disabled = false;
-          btn.style.opacity = '1';
-          btn.title = '';
+          btn.disabled = false; btn.style.opacity = '1'; btn.title = '';
+          btn.textContent = '✦ Simular en mi espacio';
         } else {
-          btn.disabled = true;
-          btn.style.opacity = '0.4';
+          btn.disabled = true; btn.style.opacity = '0.4';
           btn.title = 'Sube una foto del espacio primero (📷)';
           btn.textContent = '📷 Sube foto para simular';
         }
       }
     }, 50);
-
-    st.textContent = metros ? 'LISTO' : 'EN CURSO';
-  } else {
-    st.textContent = 'EN CURSO';
+  } else if(hayLineaEnCurso) {
+    html += `<div class="sb-actions">
+      <button class="btn-reset" onclick="resetAll()">Cancelar</button>
+    </div>`;
   }
 
-  body.innerHTML = `
-    <div class="sb-series-block">
-      <div class="sb-series-name">${d.name}</div>
-      <div class="sb-series-sub">${d.w} · ${d.ip} · ${d.v}</div>
-      ${d.excl?'<div class="sb-excl">✦ EXCLUSIVO NAVIGATOR</div>':''}
-    </div>
-
-    <div class="sb-section">
-      <div class="sb-section-title">Especificaciones</div>
-      ${cfg.cct?`<div class="sb-row"><span class="sb-label">Temperatura</span><span class="sb-val y">${cfg.cct}</span></div>`:''}
-      ${metros?`<div class="sb-row"><span class="sb-label">Metros</span><span class="sb-val y">${metros} m exactos</span></div>`:''}
-      ${metros?`<div class="sb-row"><span class="sb-label">Potencia total</span><span class="sb-val">${Math.round(d.watts*metros)} W</span></div>`:''}
-      ${pm?`<div class="sb-row"><span class="sb-label">€/metro</span><span class="sb-val">${pm.toFixed(2).replace('.',',')} €</span></div>`:''}
-      <div class="sb-row"><span class="sb-label">SDCM</span><span class="sb-val y">3 · declarado</span></div>
-      <div class="sb-row"><span class="sb-label">CRI</span><span class="sb-val y">>90 Ra</span></div>
-      <div class="sb-row"><span class="sb-label">Garantía</span><span class="sb-val y">5 años</span></div>
-      <div class="sb-row"><span class="sb-label">Sellado</span><span class="sb-val g">Fábrica · listo</span></div>
-    </div>
-
-    ${accsHtml}
-  `;
+  body.innerHTML = html;
 }
+
 
 // ════════════════════════════════════════════
 // RENDER — IA sugiere + usuario ajusta arrastrando
@@ -666,10 +701,14 @@ function clearLines() {
 }
 
 async function doRender() {
-  if(!lastPhoto || !cfg.serie || !cfg.cct) {
-    addMsg('nav','Necesito foto del espacio y configuración completa.');
+  // Usar la línea en curso, o si no hay, la última confirmada
+  const renderTarget = (cfg.serie && cfg.cct) ? cfg : (lineas.length ? lineas[lineas.length-1] : null);
+  if(!lastPhoto || !renderTarget) {
+    addMsg('nav','Necesito foto del espacio y al menos una línea configurada para generar la simulación.');
     return;
   }
+  const targetCct = renderTarget.cct;
+  const targetSerie = renderTarget.serie;
   const btn = document.getElementById('btnRender');
   const regen = document.getElementById('regenBtn');
   const cap = document.getElementById('renderCaption');
@@ -697,7 +736,7 @@ async function doRender() {
       const placement = ad.content.map(b=>b.text||'').join('').trim();
       if(cap) cap.textContent = '⏳ Generando imagen fotorrealista...';
 
-      const cctLabel = {'1800K':'warm amber candlelight neon','2200K':'warm golden neon','2700K':'warm white neon','3000K':'neutral warm white neon','4000K':'neutral white neon','5700K':'cool white neon','RGB':'RGB multicolor neon','RGBW':'RGBW color neon'}[cfg.cct]||cfg.cct+' neon';
+      const cctLabel = {'1800K':'warm amber candlelight neon','2200K':'warm golden neon','2700K':'warm white neon','3000K':'neutral warm white neon','4000K':'neutral white neon','5700K':'cool white neon','RGB':'RGB multicolor neon','RGBW':'RGBW color neon'}[targetCct]||targetCct+' neon';
       const prompt = `Keep the photograph EXACTLY as it is. Only add thin glowing ${cctLabel} LED flex strip lights mounted on the surfaces described here: ${placement}. The neon strips should glow with realistic soft bloom light effect, physically attached to the existing surfaces. Do NOT change anything else in the image — same architecture, same lighting, same people, same objects. Only add the neon LED strips.`;
 
       // Step 2: llamar al proxy de Netlify (mantiene la FAL_KEY en el servidor)
@@ -737,23 +776,23 @@ async function doRender() {
         if(cap) cap.textContent='Render fotorrealista IA · '+cctLabel;
       };
       img.src = imgUrl;
-      addMsg('nav',`✦ Render fotorrealista generado — <strong>${ND[cfg.serie].name} ${cfg.cct}</strong>. Descárgalo o inclúyelo en el presupuesto PDF.`);
+      addMsg('nav',`✦ Render fotorrealista generado — <strong>${ND[targetSerie].name} ${targetCct}</strong>. Descárgalo o inclúyelo en el presupuesto PDF.`);
 
     } catch(e) {
       addMsg('nav',`⚠️ Error fal.ai: ${e.message}. Usando simulación con líneas.`);
-      await doRenderLines();
+      await doRenderLines(targetCct);
     }
 
   } else {
     // ── LINE DRAWING fallback ──
-    await doRenderLines();
+    await doRenderLines(targetCct);
   }
 
   if(btn) { btn.disabled=false; btn.textContent='✦ Simular en mi espacio'; }
   if(regen) regen.style.opacity='1';
 }
 
-async function doRenderLines() {
+async function doRenderLines(targetCct) {
   const cap = document.getElementById('renderCaption');
   try {
     const res = await fetch('/api/anthropic-proxy',{
@@ -772,7 +811,7 @@ async function doRenderLines() {
     try { const m=raw.match(/\{[\s\S]*\}/); rd=JSON.parse(m?m[0]:raw); if(!rd.lines?.length) throw 0; }
     catch(e) { rd={lines:[{x1:0.05,y1:0.12,x2:0.92,y2:0.12,label:'cornisa'},{x1:0.05,y1:0.78,x2:0.92,y2:0.78,label:'zocalo'}],placement:'posicionamiento estimado'}; }
 
-    renderLines=rd.lines; glowColor=NEON_GLOW[cfg.cct]||'255,195,90';
+    renderLines=rd.lines; glowColor=NEON_GLOW[targetCct]||'255,195,90';
     const canvas=getCanvas();
     document.getElementById('renderPreview').style.display='block';
     const img=new Image();
@@ -849,48 +888,16 @@ function selectDriver(wattsTotal, exterior) {
 // PDF BUDGET
 // ════════════════════════════════════════════
 function printBudget() {
-  if(!cfg.serie||!cfg.cct||!cfg.metros) {
-    addMsg('nav','Necesito tener la serie, temperatura y metros para generar el presupuesto.');
+  if(lineas.length === 0) {
+    addMsg('nav','Necesito al menos una línea completa (serie + temperatura + metros) para generar el presupuesto.');
     return;
   }
-  const d=ND[cfg.serie], m=cfg.metros, ref=d.refs[cfg.cct]||Object.values(d.refs)[0];
-  const pm=pvpM(cfg.serie,cfg.cct);
-  const pot=Math.round(d.watts*m);
-  const exterior = ['forza','halo'].includes(cfg.serie);
-  const accs=getAccs(cfg.serie,m).filter(a=>!a.opt);
-  const tNeon=pm?pm*m:0;
-  const tAcc=accs.filter(a=>a.total).reduce((s,a)=>s+a.total,0);
-
-  // Driver calculation
-  let driverHtml='', driverTotal=0;
-  if(d.v !== '230V') {
-    const {driver, qty, total} = selectDriver(pot, exterior);
-    driverTotal = total;
-    driverHtml = `<tr>
-      <td>${driver.ref}</td>
-      <td><strong>Fuente alimentación 24V ${driver.w}W · ${exterior?'IP67 estanca':'IP20 compacta'}</strong><br>
-      <span style="font-size:10px;color:#666">Garantía 5 años · Faraday Navigator · Margen seguridad 20%</span></td>
-      <td class="r">${qty} ud.</td>
-      <td class="r">${driver.pvp.toFixed(2).replace('.',',')} €</td>
-      <td class="r">${total.toFixed(2).replace('.',',')} €</td>
-    </tr>`;
-  } else {
-    driverHtml = `<tr>
-      <td>—</td>
-      <td><em>Sin fuente de alimentación — Vira 230V conecta directamente a la red</em></td>
-      <td class="r">—</td><td class="r">—</td><td class="r">0,00 €</td>
-    </tr>`;
-  }
-
-  const tBase=tNeon+tAcc+driverTotal;
-  const iva=tBase*0.21;
-  const tIva=tBase+iva;
 
   const today=new Date();
   const ds=today.toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'});
   const num='NAV-'+today.getFullYear()+String(today.getMonth()+1).padStart(2,'0')+String(today.getDate()).padStart(2,'0');
 
-  // Render image
+  // Render image (si existe)
   let renderImgHtml='';
   const canvas=document.getElementById('renderCanvas');
   const rb=document.getElementById('renderBase');
@@ -901,16 +908,78 @@ function printBudget() {
       const ctx=out.getContext('2d');
       ctx.drawImage(rb,0,0,out.width,out.height);
       if(renderLines.length) renderLines.forEach(l=>drawNeonLine(ctx,l,out.width,out.height,glowColor));
-      renderImgHtml=`<div class="bp-render"><img src="${out.toDataURL('image/jpeg',0.88)}"><div class="bp-render-cap">Simulación visual · Navigator ${d.name} ${cfg.cct}</div></div>`;
+      renderImgHtml=`<div class="bp-render"><img src="${out.toDataURL('image/jpeg',0.88)}"><div class="bp-render-cap">Simulación visual del proyecto</div></div>`;
     } catch(e){}
   }
 
-  const accRows=accs.map(a=>`<tr>
-    <td>${a.ref}</td><td>${a.desc} · ${a.qty2} ${a.unit}</td>
-    <td class="r">${a.qty2} ud.</td>
-    <td class="r">${a.pvp?a.pvp.toFixed(2).replace('.',',')+'€':'—'}</td>
-    <td class="r">${a.total?a.total.toFixed(2).replace('.',',')+'€':'consultar'}</td>
-  </tr>`).join('');
+  // ── Build sections per línea ──
+  let specsBlocksHtml = '';
+  let allRows = '';
+  let grandTotalNeon=0, grandTotalAcc=0, grandTotalDriver=0;
+
+  lineas.forEach((l, idx) => {
+    const t = calcLineaTotals(l);
+    const d = t.d;
+    grandTotalNeon += t.totalNeon;
+    grandTotalAcc += t.totalAcc;
+    grandTotalDriver += t.totalDriver;
+
+    // Specs block per línea
+    specsBlocksHtml += `
+    <div class="bp-section-title">Línea ${idx+1} — ${d.name} ${l.cct}</div>
+    <div class="bp-specs">
+      <div class="bp-spec"><span class="bp-spec-l">Serie / Referencia</span><span class="bp-spec-v">${d.name} · ${t.ref}</span></div>
+      <div class="bp-spec"><span class="bp-spec-l">Temperatura de color</span><span class="bp-spec-v">${l.cct}</span></div>
+      <div class="bp-spec"><span class="bp-spec-l">Tensión</span><span class="bp-spec-v">${d.v}</span></div>
+      <div class="bp-spec"><span class="bp-spec-l">IP / IK</span><span class="bp-spec-v">${d.ip} · ${d.ik||'—'}</span></div>
+      <div class="bp-spec"><span class="bp-spec-l">SDCM / CRI</span><span class="bp-spec-v">SDCM3 · CRI>90</span></div>
+      <div class="bp-spec"><span class="bp-spec-l">Potencia</span><span class="bp-spec-v">${d.watts}W/m · Total ${Math.round(d.watts*l.metros)}W</span></div>
+      <div class="bp-spec"><span class="bp-spec-l">Servicio</span><span class="bp-spec-v">A metro · Sellado de fábrica</span></div>
+      <div class="bp-spec"><span class="bp-spec-l">Garantía / Vida útil</span><span class="bp-spec-v">5 años · 50.000h</span></div>
+    </div>`;
+
+    // Material row — neón
+    allRows += `<tr>
+      <td>${t.ref}</td>
+      <td><strong>${d.name} ${l.cct}</strong> · ${d.w} · ${d.ip} · ${l.metros}m · Sellado de fábrica · SDCM3 · CRI>90</td>
+      <td class="r">${l.metros} m</td>
+      <td class="r">${t.pm?t.pm.toFixed(2).replace('.',',')+'€':'—'}</td>
+      <td class="r">${t.pm?(t.pm*l.metros).toFixed(2).replace('.',',')+'€':'consultar'}</td>
+    </tr>`;
+
+    // Driver row
+    if(d.v !== '230V' && t.driverInfo) {
+      const {driver, qty, total, exterior} = t.driverInfo;
+      allRows += `<tr>
+        <td>${driver.ref}</td>
+        <td><strong>Fuente alimentación 24V ${driver.w}W · ${exterior?'IP67 estanca':'IP20 compacta'}</strong><br>
+        <span style="font-size:10px;color:#666">Garantía 5 años · Faraday Navigator · Margen seguridad 20% · Línea ${idx+1}</span></td>
+        <td class="r">${qty} ud.</td>
+        <td class="r">${driver.pvp.toFixed(2).replace('.',',')} €</td>
+        <td class="r">${total.toFixed(2).replace('.',',')} €</td>
+      </tr>`;
+    } else {
+      allRows += `<tr>
+        <td>—</td>
+        <td><em>Línea ${idx+1}: sin fuente de alimentación — ${d.name} 230V conecta directamente a la red</em></td>
+        <td class="r">—</td><td class="r">—</td><td class="r">0,00 €</td>
+      </tr>`;
+    }
+
+    // Accessory rows
+    t.accs.forEach(a => {
+      allRows += `<tr>
+        <td>${a.ref}</td><td>${a.desc} · ${a.qty2} ${a.unit} <span style="font-size:9px;color:#999">(línea ${idx+1})</span></td>
+        <td class="r">${a.qty2} ud.</td>
+        <td class="r">${a.pvp?a.pvp.toFixed(2).replace('.',',')+'€':'—'}</td>
+        <td class="r">${a.total?a.total.toFixed(2).replace('.',',')+'€':'consultar'}</td>
+      </tr>`;
+    });
+  });
+
+  const tBase = grandTotalNeon + grandTotalAcc + grandTotalDriver;
+  const iva = tBase*0.21;
+  const tIva = tBase+iva;
 
   document.getElementById('budgetPrint').innerHTML=`
     <div class="bp-hdr">
@@ -920,27 +989,15 @@ function printBudget() {
       </div>
       <div>
         <div class="bp-num">PRESUPUESTO</div>
-        <div class="bp-meta" style="text-align:right">Nº ${num}<br>Fecha: ${ds}<br>Válido 30 días<br><em>Precios PVP Catálogo 2026</em></div>
+        <div class="bp-meta" style="text-align:right">Nº ${num}<br>Fecha: ${ds}<br>Válido 30 días<br>${lineas.length} línea${lineas.length>1?'s':''}<br><em>Precios PVP Catálogo 2026</em></div>
       </div>
     </div>
 
     ${renderImgHtml}
 
-    <div class="bp-section-title">Propuesta técnica — ${d.name} ${cfg.cct}</div>
-    <div class="bp-specs">
-      <div class="bp-spec"><span class="bp-spec-l">Serie / Referencia</span><span class="bp-spec-v">${d.name} · ${ref}</span></div>
-      <div class="bp-spec"><span class="bp-spec-l">Temperatura de color</span><span class="bp-spec-v">${cfg.cct}</span></div>
-      <div class="bp-spec"><span class="bp-spec-l">Tensión</span><span class="bp-spec-v">${d.v}</span></div>
-      <div class="bp-spec"><span class="bp-spec-l">IP / IK</span><span class="bp-spec-v">${d.ip} · ${d.ik||'—'}</span></div>
-      <div class="bp-spec"><span class="bp-spec-l">SDCM</span><span class="bp-spec-v">SDCM3 · declarado en ficha</span></div>
-      <div class="bp-spec"><span class="bp-spec-l">CRI</span><span class="bp-spec-v">>90 Ra</span></div>
-      <div class="bp-spec"><span class="bp-spec-l">Potencia instalada</span><span class="bp-spec-v">${d.watts}W/m · Total ${pot}W</span></div>
-      <div class="bp-spec"><span class="bp-spec-l">Servicio</span><span class="bp-spec-v">A metro · Sellado de fábrica · Desde 1m</span></div>
-      <div class="bp-spec"><span class="bp-spec-l">Vida útil</span><span class="bp-spec-v">50.000 horas</span></div>
-      <div class="bp-spec"><span class="bp-spec-l">Garantía</span><span class="bp-spec-v">5 años</span></div>
-    </div>
+    ${specsBlocksHtml}
 
-    <div class="bp-section-title">Lista de materiales</div>
+    <div class="bp-section-title">Lista de materiales — proyecto completo</div>
     <table class="bp-table">
       <thead><tr>
         <th class="y">Ref.</th><th>Descripción</th>
@@ -948,17 +1005,7 @@ function printBudget() {
         <th style="text-align:right">€/ud.</th>
         <th style="text-align:right">Total</th>
       </tr></thead>
-      <tbody>
-        <tr>
-          <td>${ref}</td>
-          <td><strong>${d.name} ${cfg.cct}</strong> · ${d.w} · ${d.ip} · ${m}m · Sellado de fábrica · SDCM3 · CRI>90</td>
-          <td class="r">${m} m</td>
-          <td class="r">${pm?pm.toFixed(2).replace('.',',')+'€':'—'}</td>
-          <td class="r">${pm?(pm*m).toFixed(2).replace('.',',')+'€':'consultar'}</td>
-        </tr>
-        ${driverHtml}
-        ${accRows}
-      </tbody>
+      <tbody>${allRows}</tbody>
     </table>
     <div class="bp-sub"><span>Subtotal sin IVA</span><strong>${tBase.toFixed(2).replace('.',',')} €</strong></div>
     <div class="bp-sub"><span>IVA 21%</span><span>${iva.toFixed(2).replace('.',',')} €</span></div>
@@ -977,6 +1024,7 @@ function printBudget() {
 
 function resetAll() {
   cfg={serie:null,cct:null,metros:null};
+  lineas=[];
   history.length=0;
   lastPhoto=null; pendingPhoto=null;
   document.getElementById('messages').innerHTML='';
@@ -1012,11 +1060,13 @@ negro/oscuro→dark | sin driver/230V→vira | empotrar/encimera→slot | esquin
 
 REGLAS DE RESPUESTA:
 1. Responde SIEMPRE en español, máximo 3 frases, directo.
-2. Cuando tengas serie+temperatura+metros, añade AL FINAL: CONFIG:{"serie":"x","cct":"y","metros":z}
+2. Cuando tengas serie+temperatura+metros PARA UNA LÍNEA, añade AL FINAL: CONFIG:{"serie":"x","cct":"y","metros":z}
 3. Si falta algún dato, pregunta SOLO una cosa.
 4. NUNCA inventes que confirmas pedidos, que llamas a comerciales ni que tienes sistemas externos.
 5. Tú SÍ tienes los precios del catálogo 2026 — úsalos directamente.
-6. La simulación visual y el presupuesto PDF los genera la app automáticamente — no los menciones como tareas tuyas.`;
+6. La simulación visual y el presupuesto PDF los genera la app automáticamente — no los menciones como tareas tuyas.
+7. EL PRESUPUESTO ES MULTILÍNEA: el usuario puede pedir varias series en el mismo proyecto (ej: "y además 5 metros de Apex en las esquinas"). Cada vez que detectes una NUEVA línea con serie+temperatura+metros, devuelve CONFIG igual — la app la añade automáticamente al presupuesto sin borrar las anteriores.
+8. Si el usuario dice "añade otra línea", "y también necesito...", "además quiero..." trátalo como una nueva línea independiente.`;
 }
 
 // ════════════════════════════════════════════
@@ -1085,6 +1135,11 @@ async function sendMessage() {
         if(c.serie&&ND[c.serie]) cfg.serie=c.serie;
         if(c.cct) cfg.cct=c.cct;
         if(c.metros&&!isNaN(c.metros)) cfg.metros=parseInt(c.metros);
+        // Si la línea está completa, confirmarla automáticamente al presupuesto
+        if(cfg.serie && cfg.cct && cfg.metros) {
+          addLinea({...cfg});
+          cfg = {serie:null, cct:null, metros:null};
+        }
         updateSidebar();
       } catch(e){}
     }
@@ -1123,7 +1178,7 @@ function handleKey(e) {
 // ════════════════════════════════════════════
 function init() {
   addMsg('nav',
-    '¡Hola! Soy el configurador de neones Navigator. Describe tu proyecto y te recomendaré la serie correcta, con el presupuesto desglosado en el panel derecho.<br><br>También puedes subir una <strong>foto del espacio</strong> con 📷 para ver cómo quedaría el neón instalado.',
+    '¡Hola! Soy el configurador de neones Navigator. Describe tu proyecto y te recomendaré la serie correcta, con el presupuesto desglosado en el panel derecho.<br><br>Puedes pedir <strong>varias líneas en el mismo proyecto</strong> — por ejemplo, configura una serie, y luego escribe "y además necesito..." para añadir otra. También puedes subir una <strong>foto del espacio</strong> con 📷 para ver cómo quedaría el neón instalado.',
     ['Barra de bar negra cálido','Foseado sin driver 230V','Empotrar en encimera','Suelo transitable jardín','Rótulo con RGB','Esquinas de mueble']
   );
   updateSidebar();
