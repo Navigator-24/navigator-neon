@@ -1,5 +1,4 @@
 
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -123,6 +122,10 @@ body{background:var(--bg);color:var(--white);font-family:'Syne',sans-serif;font-
 .modal3d{position:fixed;inset:0;background:rgba(6,6,8,0.92);z-index:1000;display:none;flex-direction:column;}
 .modal3d.open{display:flex;}
 .modal3d-hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;border-bottom:1px solid var(--s3);flex-shrink:0;}
+.modal3d-tabs{display:flex;gap:0;border-bottom:1px solid var(--s3);flex-shrink:0;overflow-x:auto;}
+.modal3d-tab{font-family:'IBM Plex Mono',monospace;font-size:11px;padding:12px 20px;color:var(--muted);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap;transition:all 0.15s;}
+.modal3d-tab:hover{color:var(--light);}
+.modal3d-tab.active{color:var(--y);border-bottom-color:var(--y);background:var(--y2);}
 .modal3d-title{font-family:'Instrument Serif',serif;font-size:18px;color:var(--y);}
 .modal3d-close{background:var(--s3);border:1px solid var(--s4);color:var(--white);width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;}
 .modal3d-close:hover{background:var(--s4);}
@@ -186,13 +189,14 @@ body{background:var(--bg);color:var(--white);font-family:'Syne',sans-serif;font-
 <!-- MODAL 3D -->
 <div class="modal3d" id="modal3d">
   <div class="modal3d-hdr">
-    <div class="modal3d-title">Maqueta 3D · Vista en planta</div>
+    <div class="modal3d-title">Maqueta 3D · Sala por sala</div>
     <button class="modal3d-close" onclick="close3DView()">✕</button>
   </div>
+  <div class="modal3d-tabs" id="modal3dTabs"></div>
   <div class="modal3d-body">
     <div id="three-container"></div>
     <div class="modal3d-legend">
-      <div class="modal3d-legend-title">Líneas del proyecto</div>
+      <div class="modal3d-legend-title">Esta sala</div>
       <div id="legendContent"></div>
     </div>
   </div>
@@ -1219,45 +1223,21 @@ function handleKey(e) {
 }
 
 // ════════════════════════════════════════════
-// MAQUETA 3D — caja de habitación con neón
+// MAQUETA 3D — sala por sala con pestañas
 // ════════════════════════════════════════════
 let three3d = { scene:null, camera:null, renderer:null, raf:null,
-  theta:Math.PI*0.32, phi:Math.PI*0.36, radius:9, target:null,
-  dragging:false, lastX:0, lastY:0 };
+  theta:0, phi:0, radius:5, target:null,
+  dragging:false, lastX:0, lastY:0, activeIdx:0 };
 
-const ROOM = { w:6, d:5, h:2.8 }; // dimensiones genéricas de la maqueta (m)
+const ROOM = { w:4, d:3.5, h:2.6 }; // dimensiones genéricas por sala (m)
 
-// Categoriza cada serie según dónde se representa el neón en la maqueta
-function neonPlacement(serie, idx) {
-  const w=ROOM.w/2, d=ROOM.d/2, h=ROOM.h;
-  const ceilingEdges = [
-    { from:[-w,h,-d], to:[ w,h,-d], label:'Cornisa techo · pared trasera' },
-    { from:[-w,h,-d], to:[-w,h, d], label:'Cornisa techo · pared izquierda' },
-    { from:[ w,h,-d], to:[ w,h, d], label:'Cornisa techo · pared derecha' },
-  ];
-  const floorEdges = [
-    { from:[-w,0.03,-d], to:[ w,0.03,-d], label:'Zócalo suelo · pared trasera' },
-    { from:[-w,0.03,-d], to:[-w,0.03, d], label:'Zócalo suelo · pared izquierda' },
-    { from:[ w,0.03,-d], to:[ w,0.03, d], label:'Zócalo suelo · pared derecha' },
-  ];
-  const cornerEdges = [
-    { from:[-w,0,-d], to:[-w,h,-d], label:'Esquina vertical · trasera izq.' },
-    { from:[ w,0,-d], to:[ w,h,-d], label:'Esquina vertical · trasera dcha.' },
-    { from:[-w,0, d], to:[-w,h, d], label:'Esquina vertical · frontal izq.' },
-  ];
-  const wallEdges = [
-    { from:[-w*0.7,h*0.55,-d+0.02], to:[ w*0.7,h*0.55,-d+0.02], label:'Lineal de pared · pared trasera' },
-    { from:[-w*0.7,h*0.55, d-0.02], to:[ w*0.7,h*0.55, d-0.02], label:'Lineal de pared · pared frontal' },
-  ];
-
-  if(serie==='forza' || serie==='halo') {
-    if(serie==='halo') return { type:'ring', center:[0,h*0.62,0], radius:Math.min(ROOM.w,ROOM.d)*0.32, label:'Colgante 360° · centro del espacio' };
-    return { type:'line', ...floorEdges[idx % floorEdges.length] };
-  }
-  if(serie==='apex') return { type:'line', ...cornerEdges[idx % cornerEdges.length] };
-  if(serie==='vira' || serie==='pix') return { type:'line', ...wallEdges[idx % wallEdges.length] };
-  // slot, cube, dark, tetra, tetra3d -> cornisa de techo
-  return { type:'line', ...ceilingEdges[idx % ceilingEdges.length] };
+// Categoría de instalación según la serie
+function lineCategory(serie) {
+  if(serie==='forza') return 'floor';
+  if(serie==='halo') return 'ring';
+  if(serie==='apex') return 'corner';
+  if(serie==='vira' || serie==='pix') return 'wall';
+  return 'ceiling'; // tetra3d, cube, slot, dark, tetra
 }
 
 function neonColorHex(cct) {
@@ -1265,106 +1245,183 @@ function neonColorHex(cct) {
   return (rgb[0]<<16) + (rgb[1]<<8) + rgb[2];
 }
 
-function buildRoom3D() {
-  const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x09090c);
+// Material base de la sala (suelo cálido + paredes oscuras Navigator)
+function roomShellMaterials() {
+  return {
+    floor: new THREE.MeshStandardMaterial({ color:0x2b2018, roughness:0.85, metalness:0.05, side:THREE.DoubleSide }),
+    wall:  new THREE.MeshStandardMaterial({ color:0x16161b, roughness:0.92, metalness:0.04, side:THREE.DoubleSide }),
+  };
+}
 
-  const w=ROOM.w, d=ROOM.d, h=ROOM.h;
-  const wallMat = new THREE.MeshStandardMaterial({ color:0x1c1c22, roughness:0.95, metalness:0.05, side:THREE.DoubleSide });
-  const floorMat = new THREE.MeshStandardMaterial({ color:0x2a2a30, roughness:0.85, metalness:0.05, side:THREE.DoubleSide });
+function addRoomShell(scene) {
+  const { w, d, h } = ROOM;
+  const mats = roomShellMaterials();
 
-  // Suelo
-  const floor = new THREE.Mesh(new THREE.PlaneGeometry(w,d), floorMat);
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(w,d), mats.floor);
   floor.rotation.x = -Math.PI/2;
   scene.add(floor);
 
-  // Pared trasera
-  const back = new THREE.Mesh(new THREE.PlaneGeometry(w,h), wallMat);
+  const back = new THREE.Mesh(new THREE.PlaneGeometry(w,h), mats.wall);
   back.position.set(0,h/2,-d/2);
   scene.add(back);
 
-  // Pared izquierda
-  const left = new THREE.Mesh(new THREE.PlaneGeometry(d,h), wallMat);
+  const left = new THREE.Mesh(new THREE.PlaneGeometry(d,h), mats.wall);
   left.rotation.y = Math.PI/2;
   left.position.set(-w/2,h/2,0);
   scene.add(left);
 
-  // Pared derecha
-  const right = new THREE.Mesh(new THREE.PlaneGeometry(d,h), wallMat);
+  const right = new THREE.Mesh(new THREE.PlaneGeometry(d,h), mats.wall);
   right.rotation.y = -Math.PI/2;
   right.position.set(w/2,h/2,0);
   scene.add(right);
 
-  // Líneas de borde (wireframe sutil) para dar sensación de caja
   const edgesGeo = new THREE.EdgesGeometry(new THREE.BoxGeometry(w,h,d));
-  const edgesMat = new THREE.LineBasicMaterial({ color:0x3a3a44 });
-  const edges = new THREE.LineSegments(edgesGeo, edgesMat);
+  const edges = new THREE.LineSegments(edgesGeo, new THREE.LineBasicMaterial({ color:0x33333c }));
   edges.position.set(0,h/2,0);
   scene.add(edges);
 
-  // Luz ambiente tenue
   scene.add(new THREE.AmbientLight(0x222233, 0.7));
   const fill = new THREE.DirectionalLight(0xffffff, 0.15);
   fill.position.set(3,6,4);
   scene.add(fill);
-
-  return scene;
 }
 
-function addNeonToScene(scene, placement, cct, label) {
+// Tubo de neón entre dos puntos
+function addNeonTube(scene, from, to, cct) {
+  const colorHex = neonColorHex(cct);
+  const color = new THREE.Color(colorHex);
+  const a = new THREE.Vector3(...from);
+  const b = new THREE.Vector3(...to);
+  const dir = new THREE.Vector3().subVectors(b,a);
+  const len = dir.length();
+  const mid = new THREE.Vector3().addVectors(a,b).multiplyScalar(0.5);
+
+  const core = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.03,0.03,len,8),
+    new THREE.MeshStandardMaterial({ color:0xffffff, emissive:color, emissiveIntensity:2.2 })
+  );
+  core.position.copy(mid);
+  core.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), dir.clone().normalize());
+  scene.add(core);
+
+  const glow = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.12,0.12,len,8),
+    new THREE.MeshBasicMaterial({ color:colorHex, transparent:true, opacity:0.18 })
+  );
+  glow.position.copy(mid); glow.quaternion.copy(core.quaternion);
+  scene.add(glow);
+
+  const light = new THREE.PointLight(colorHex, 1.2, Math.max(len*1.5, 3));
+  light.position.copy(mid);
+  scene.add(light);
+}
+
+function addNeonRing(scene, center, radius, cct) {
   const colorHex = neonColorHex(cct);
   const color = new THREE.Color(colorHex);
 
-  function addTube(from, to) {
-    const a = new THREE.Vector3(...from);
-    const b = new THREE.Vector3(...to);
-    const dir = new THREE.Vector3().subVectors(b,a);
-    const len = dir.length();
-    const mid = new THREE.Vector3().addVectors(a,b).multiplyScalar(0.5);
+  const core = new THREE.Mesh(
+    new THREE.TorusGeometry(radius, 0.03, 12, 48),
+    new THREE.MeshStandardMaterial({ color:0xffffff, emissive:color, emissiveIntensity:2.2 })
+  );
+  core.position.set(...center); core.rotation.x = Math.PI/2;
+  scene.add(core);
 
-    // Núcleo brillante
-    const core = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.03,0.03,len,8),
-      new THREE.MeshStandardMaterial({ color:0xffffff, emissive:color, emissiveIntensity:2.2 })
-    );
-    core.position.copy(mid);
-    core.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), dir.clone().normalize());
-    scene.add(core);
+  const glow = new THREE.Mesh(
+    new THREE.TorusGeometry(radius, 0.1, 12, 48),
+    new THREE.MeshBasicMaterial({ color:colorHex, transparent:true, opacity:0.16 })
+  );
+  glow.position.copy(core.position); glow.rotation.x = Math.PI/2;
+  scene.add(glow);
 
-    // Halo de luz alrededor (más grueso, semitransparente)
-    const glow = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.12,0.12,len,8),
-      new THREE.MeshBasicMaterial({ color:colorHex, transparent:true, opacity:0.18 })
-    );
-    glow.position.copy(mid);
-    glow.quaternion.copy(core.quaternion);
-    scene.add(glow);
-
-    // Luz puntual de color
-    const light = new THREE.PointLight(colorHex, 1.2, Math.max(len*1.5, 3));
-    light.position.copy(mid);
-    scene.add(light);
-  }
-
-  if(placement.type === 'ring') {
-    const geo = new THREE.TorusGeometry(placement.radius, 0.03, 12, 48);
-    const mesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color:0xffffff, emissive:color, emissiveIntensity:2.2 }));
-    mesh.position.set(...placement.center);
-    mesh.rotation.x = Math.PI/2;
-    scene.add(mesh);
-    const glow = new THREE.Mesh(
-      new THREE.TorusGeometry(placement.radius, 0.1, 12, 48),
-      new THREE.MeshBasicMaterial({ color:colorHex, transparent:true, opacity:0.16 })
-    );
-    glow.position.copy(mesh.position); glow.rotation.x = Math.PI/2;
-    scene.add(glow);
-    const light = new THREE.PointLight(colorHex, 1.4, 6);
-    light.position.copy(mesh.position);
-    scene.add(light);
-  } else {
-    addTube(placement.from, placement.to);
-  }
+  const light = new THREE.PointLight(colorHex, 1.4, 6);
+  light.position.copy(core.position);
+  scene.add(light);
 }
+
+// Construye la sala completa para una línea concreta, devuelve la cámara sugerida
+function buildSceneForLine(linea) {
+  const { w, d, h } = ROOM;
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x09090c);
+  addRoomShell(scene);
+
+  const cat = lineCategory(linea.serie);
+  const isDark = linea.serie === 'dark';
+  const trimColor = isDark ? 0x0a0a0d : 0x4a4a52; // perfil negro vs aluminio
+  let cam = { theta:0.5, phi:0.55, radius:5.2, target:[0,h/2,0] };
+
+  if(cat === 'ceiling') {
+    // Perfil/canal en la cornisa del techo, pared trasera
+    const len = w*0.78;
+    const trim = new THREE.Mesh(
+      new THREE.BoxGeometry(len, 0.07, 0.07),
+      new THREE.MeshStandardMaterial({ color:trimColor, roughness:0.5, metalness:0.4 })
+    );
+    trim.position.set(0, h-0.05, -d/2+0.045);
+    scene.add(trim);
+    addNeonTube(scene, [-len/2, h-0.05, -d/2+0.07], [len/2, h-0.05, -d/2+0.07], linea.cct);
+    cam = { theta:0.18, phi:0.95, radius:4.6, target:[0, h*0.82, -d*0.15] };
+
+  } else if(cat === 'floor') {
+    // Escalón / zócalo transitable cerca de la apertura frontal
+    const len = w*0.8;
+    const step = new THREE.Mesh(
+      new THREE.BoxGeometry(len, 0.14, 0.5),
+      new THREE.MeshStandardMaterial({ color:0x33291c, roughness:0.8 })
+    );
+    step.position.set(0, 0.07, d/2-0.32);
+    scene.add(step);
+    addNeonTube(scene, [-len/2, 0.145, d/2-0.07], [len/2, 0.145, d/2-0.07], linea.cct);
+    cam = { theta:0.35, phi:1.15, radius:5.0, target:[0, 0.2, d*0.15] };
+
+  } else if(cat === 'ring') {
+    // Colgante 360° en el centro, con cable desde el techo
+    const cy = h*0.6;
+    const cable = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.015,0.015,h-cy,6),
+      new THREE.MeshStandardMaterial({ color:0x444450 })
+    );
+    cable.position.set(0, cy + (h-cy)/2, 0);
+    scene.add(cable);
+    addNeonRing(scene, [0, cy, 0], Math.min(w,d)*0.28, linea.cct);
+    cam = { theta:0.55, phi:0.55, radius:5.4, target:[0, h*0.55, 0] };
+
+  } else if(cat === 'corner') {
+    // Mueble de esquina con arista vertical iluminada
+    const cx = -w/2 + 0.3, cz = -d/2 + 0.3;
+    const block = new THREE.Mesh(
+      new THREE.BoxGeometry(0.6, 1.0, 0.6),
+      new THREE.MeshStandardMaterial({ color:0x2a2018, roughness:0.7 })
+    );
+    block.position.set(cx, 0.5, cz);
+    scene.add(block);
+    addNeonTube(scene, [cx-0.31, 0, cz-0.31], [cx-0.31, 1.02, cz-0.31], linea.cct);
+    cam = { theta:-0.7, phi:0.55, radius:4.4, target:[cx, 0.5, cz] };
+
+  } else if(cat === 'wall') {
+    // Panel retroiluminado en la pared trasera
+    const len = w*0.55;
+    const panel = new THREE.Mesh(
+      new THREE.BoxGeometry(len, 0.55, 0.05),
+      new THREE.MeshStandardMaterial({ color:0x1c1c22, roughness:0.6 })
+    );
+    panel.position.set(0, h*0.55, -d/2+0.05);
+    scene.add(panel);
+    addNeonTube(scene, [-len/2, h*0.55-0.29, -d/2+0.08], [len/2, h*0.55-0.29, -d/2+0.08], linea.cct);
+    cam = { theta:0.15, phi:0.55, radius:4.8, target:[0, h*0.5, -d*0.2] };
+  }
+
+  return { scene, cam };
+}
+
+const CATEGORY_LABELS = {
+  ceiling: 'Cornisa de techo · perfil empotrado/superficie',
+  floor:   'Zócalo transitable · cerca del acceso',
+  ring:    'Colgante 360° · centro del espacio',
+  corner:  'Arista vertical de mueble en esquina',
+  wall:    'Panel retroiluminado en pared',
+};
 
 function updateCamera3D() {
   const t = three3d;
@@ -1373,6 +1430,55 @@ function updateCamera3D() {
   const z = t.target.z + t.radius*Math.sin(t.phi)*Math.cos(t.theta);
   t.camera.position.set(x,y,z);
   t.camera.lookAt(t.target);
+}
+
+function disposeScene(scene) {
+  if(!scene) return;
+  scene.traverse(obj => {
+    if(obj.geometry) obj.geometry.dispose();
+    if(obj.material) {
+      if(Array.isArray(obj.material)) obj.material.forEach(m=>m.dispose());
+      else obj.material.dispose();
+    }
+  });
+}
+
+function renderTabs() {
+  const tabs = document.getElementById('modal3dTabs');
+  tabs.innerHTML = lineas.map((l,i) => {
+    const d = ND[l.serie];
+    return `<button class="modal3d-tab ${i===three3d.activeIdx?'active':''}" onclick="selectLine3D(${i})">${i+1} · ${d.name} ${l.cct}</button>`;
+  }).join('');
+}
+
+function selectLine3D(idx) {
+  three3d.activeIdx = idx;
+  renderTabs();
+
+  const linea = lineas[idx];
+  const d = ND[linea.serie];
+  const cat = lineCategory(linea.serie);
+
+  disposeScene(three3d.scene);
+  const { scene, cam } = buildSceneForLine(linea);
+  three3d.scene = scene;
+  three3d.target = new THREE.Vector3(...cam.target);
+  three3d.theta = cam.theta;
+  three3d.phi = cam.phi;
+  three3d.radius = cam.radius;
+  updateCamera3D();
+
+  const rgb = (NEON_GLOW[linea.cct]||'255,195,90');
+  document.getElementById('legendContent').innerHTML = `
+    <div class="legend-item" style="border-bottom:none;padding-top:0;">
+      <div class="legend-swatch" style="background:rgb(${rgb});color:rgb(${rgb})"></div>
+      <div>
+        <div class="legend-name">${d.name} · ${linea.cct} · ${linea.metros}m</div>
+        <div class="legend-pos">${CATEGORY_LABELS[cat]}</div>
+      </div>
+    </div>
+    ${d.excl?'<div class="sb-excl" style="margin-top:10px;">✦ EXCLUSIVO NAVIGATOR</div>':''}
+  `;
 }
 
 function open3DView() {
@@ -1385,12 +1491,7 @@ function open3DView() {
   const container = document.getElementById('three-container');
   container.innerHTML = '';
 
-  const scene = buildRoom3D();
-  three3d.scene = scene;
-  three3d.target = new THREE.Vector3(0, ROOM.h/2, 0);
-  three3d.theta = Math.PI*0.32;
-  three3d.phi = Math.PI*0.36;
-  three3d.radius = Math.max(ROOM.w,ROOM.d,ROOM.h)*1.7;
+  three3d.activeIdx = Math.min(three3d.activeIdx, lineas.length-1);
 
   const w = container.clientWidth, h = container.clientHeight;
   three3d.camera = new THREE.PerspectiveCamera(45, w/h, 0.1, 100);
@@ -1398,36 +1499,9 @@ function open3DView() {
   three3d.renderer.setSize(w,h);
   container.appendChild(three3d.renderer.domElement);
 
-  // Añadir cada línea a la escena + leyenda
-  let legendHtml = '';
-  const placedByType = { line_ceiling:0, line_floor:0, line_corner:0, line_wall:0 };
-  lineas.forEach((l, idx) => {
-    const d = ND[l.serie];
-    let group = 'line_ceiling';
-    if(l.serie==='forza') group='line_floor';
-    else if(l.serie==='halo') group='ring';
-    else if(l.serie==='apex') group='line_corner';
-    else if(l.serie==='vira'||l.serie==='pix') group='line_wall';
-    const placeIdx = group==='ring' ? 0 : (placedByType[group]||0);
-    if(group!=='ring') placedByType[group] = placeIdx+1;
+  selectLine3D(three3d.activeIdx);
 
-    const placement = neonPlacement(l.serie, placeIdx);
-    addNeonToScene(scene, placement, l.cct, d.name);
-
-    const rgb = (NEON_GLOW[l.cct]||'255,195,90');
-    legendHtml += `<div class="legend-item">
-      <div class="legend-swatch" style="background:rgb(${rgb});color:rgb(${rgb})"></div>
-      <div>
-        <div class="legend-name">${d.name} · ${l.cct} · ${l.metros}m</div>
-        <div class="legend-pos">${placement.label}</div>
-      </div>
-    </div>`;
-  });
-  document.getElementById('legendContent').innerHTML = legendHtml;
-
-  updateCamera3D();
-
-  // Controles de arrastre
+  // Controles de arrastre y zoom
   const onDown = (e) => {
     three3d.dragging = true;
     const p = e.touches ? e.touches[0] : e;
@@ -1448,8 +1522,15 @@ function open3DView() {
   const onWheel = (e) => {
     e.preventDefault();
     three3d.radius *= (1 + e.deltaY*0.001);
-    three3d.radius = Math.max(2, Math.min(20, three3d.radius));
+    three3d.radius = Math.max(2, Math.min(14, three3d.radius));
     updateCamera3D();
+  };
+  const onResize = () => {
+    if(!three3d.renderer) return;
+    const w2 = container.clientWidth, h2 = container.clientHeight;
+    three3d.renderer.setSize(w2,h2);
+    three3d.camera.aspect = w2/h2;
+    three3d.camera.updateProjectionMatrix();
   };
 
   container.addEventListener('mousedown', onDown);
@@ -1459,12 +1540,14 @@ function open3DView() {
   container.addEventListener('touchmove', onMove, {passive:true});
   container.addEventListener('touchend', onUp);
   container.addEventListener('wheel', onWheel, {passive:false});
+  window.addEventListener('resize', onResize);
 
   three3d._cleanup = () => {
     container.removeEventListener('mousedown', onDown);
     window.removeEventListener('mousemove', onMove);
     window.removeEventListener('mouseup', onUp);
     container.removeEventListener('wheel', onWheel);
+    window.removeEventListener('resize', onResize);
   };
 
   function animate() {
@@ -1479,12 +1562,14 @@ function close3DView() {
   modal.classList.remove('open');
   if(three3d.raf) cancelAnimationFrame(three3d.raf);
   if(three3d._cleanup) three3d._cleanup();
+  disposeScene(three3d.scene);
   if(three3d.renderer) {
     three3d.renderer.dispose();
     const container = document.getElementById('three-container');
     container.innerHTML = '';
   }
 }
+
 
 // ════════════════════════════════════════════
 // INIT
