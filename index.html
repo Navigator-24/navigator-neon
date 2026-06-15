@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -117,6 +118,25 @@ body{background:var(--bg);color:var(--white);font-family:'Syne',sans-serif;font-
 .btn-render{background:transparent;color:var(--y);border:1px solid var(--y3);padding:11px;font-family:'Syne',sans-serif;font-size:12px;font-weight:600;cursor:pointer;width:100%;display:flex;align-items:center;justify-content:center;gap:8px;transition:all 0.15s;}
 .btn-render:hover{background:var(--y2);}
 .btn-render:disabled{opacity:0.35;cursor:not-allowed;}
+
+/* ── 3D MODAL ── */
+.modal3d{position:fixed;inset:0;background:rgba(6,6,8,0.92);z-index:1000;display:none;flex-direction:column;}
+.modal3d.open{display:flex;}
+.modal3d-hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;border-bottom:1px solid var(--s3);flex-shrink:0;}
+.modal3d-title{font-family:'Instrument Serif',serif;font-size:18px;color:var(--y);}
+.modal3d-close{background:var(--s3);border:1px solid var(--s4);color:var(--white);width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;}
+.modal3d-close:hover{background:var(--s4);}
+.modal3d-body{flex:1;position:relative;display:flex;min-height:0;}
+#three-container{flex:1;cursor:grab;}
+#three-container:active{cursor:grabbing;}
+.modal3d-legend{width:260px;border-left:1px solid var(--s3);padding:18px;overflow-y:auto;flex-shrink:0;}
+.modal3d-legend-title{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:12px;}
+.legend-item{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--s3);}
+.legend-swatch{width:14px;height:14px;border-radius:50%;flex-shrink:0;margin-top:2px;box-shadow:0 0 8px currentColor;}
+.legend-name{font-size:12.5px;font-weight:700;color:var(--white);}
+.legend-pos{font-size:11px;color:var(--dim);margin-top:2px;}
+.modal3d-hint{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);padding:10px 24px;border-top:1px solid var(--s3);text-align:center;flex-shrink:0;}
+@media(max-width:760px){.modal3d-legend{display:none;}}
 .btn-reset{background:transparent;color:var(--muted);border:1px solid var(--s4);padding:9px;font-family:'Syne',sans-serif;font-size:12px;cursor:pointer;width:100%;transition:all 0.15s;}
 .btn-reset:hover{color:var(--white);border-color:var(--dim);}
 
@@ -157,10 +177,27 @@ body{background:var(--bg);color:var(--white);font-family:'Syne',sans-serif;font-
   .bp-footer{margin-top:28px;font-size:9px;color:#999;border-top:1px solid #e8e8e0;padding-top:12px;line-height:1.9;}
 }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
 
 <div id="budgetPrint"></div>
+
+<!-- MODAL 3D -->
+<div class="modal3d" id="modal3d">
+  <div class="modal3d-hdr">
+    <div class="modal3d-title">Maqueta 3D · Vista en planta</div>
+    <button class="modal3d-close" onclick="close3DView()">✕</button>
+  </div>
+  <div class="modal3d-body">
+    <div id="three-container"></div>
+    <div class="modal3d-legend">
+      <div class="modal3d-legend-title">Líneas del proyecto</div>
+      <div id="legendContent"></div>
+    </div>
+  </div>
+  <div class="modal3d-hint">Arrastra para rotar · Rueda del ratón para zoom · Maqueta orientativa, no a escala real</div>
+</div>
 
 <header class="hdr">
   <div class="hdr-logo">Navigator <span>CONFIGURADOR IA · NEONES 2026</span></div>
@@ -540,6 +577,7 @@ function updateSidebar() {
     <div class="sb-actions">
       <button class="btn-pdf" onclick="printBudget()">🖨 Presupuesto PDF</button>
       <button class="btn-render" id="btnRender" onclick="doRender()">✦ Simular en mi espacio</button>
+      <button class="btn-render" id="btn3D" onclick="open3DView()">🧊 Ver maqueta 3D</button>
       <button class="btn-reset" onclick="resetAll()">Nueva configuración</button>
     </div>`;
 
@@ -1181,6 +1219,274 @@ function handleKey(e) {
 }
 
 // ════════════════════════════════════════════
+// MAQUETA 3D — caja de habitación con neón
+// ════════════════════════════════════════════
+let three3d = { scene:null, camera:null, renderer:null, raf:null,
+  theta:Math.PI*0.32, phi:Math.PI*0.36, radius:9, target:null,
+  dragging:false, lastX:0, lastY:0 };
+
+const ROOM = { w:6, d:5, h:2.8 }; // dimensiones genéricas de la maqueta (m)
+
+// Categoriza cada serie según dónde se representa el neón en la maqueta
+function neonPlacement(serie, idx) {
+  const w=ROOM.w/2, d=ROOM.d/2, h=ROOM.h;
+  const ceilingEdges = [
+    { from:[-w,h,-d], to:[ w,h,-d], label:'Cornisa techo · pared trasera' },
+    { from:[-w,h,-d], to:[-w,h, d], label:'Cornisa techo · pared izquierda' },
+    { from:[ w,h,-d], to:[ w,h, d], label:'Cornisa techo · pared derecha' },
+  ];
+  const floorEdges = [
+    { from:[-w,0.03,-d], to:[ w,0.03,-d], label:'Zócalo suelo · pared trasera' },
+    { from:[-w,0.03,-d], to:[-w,0.03, d], label:'Zócalo suelo · pared izquierda' },
+    { from:[ w,0.03,-d], to:[ w,0.03, d], label:'Zócalo suelo · pared derecha' },
+  ];
+  const cornerEdges = [
+    { from:[-w,0,-d], to:[-w,h,-d], label:'Esquina vertical · trasera izq.' },
+    { from:[ w,0,-d], to:[ w,h,-d], label:'Esquina vertical · trasera dcha.' },
+    { from:[-w,0, d], to:[-w,h, d], label:'Esquina vertical · frontal izq.' },
+  ];
+  const wallEdges = [
+    { from:[-w*0.7,h*0.55,-d+0.02], to:[ w*0.7,h*0.55,-d+0.02], label:'Lineal de pared · pared trasera' },
+    { from:[-w*0.7,h*0.55, d-0.02], to:[ w*0.7,h*0.55, d-0.02], label:'Lineal de pared · pared frontal' },
+  ];
+
+  if(serie==='forza' || serie==='halo') {
+    if(serie==='halo') return { type:'ring', center:[0,h*0.62,0], radius:Math.min(ROOM.w,ROOM.d)*0.32, label:'Colgante 360° · centro del espacio' };
+    return { type:'line', ...floorEdges[idx % floorEdges.length] };
+  }
+  if(serie==='apex') return { type:'line', ...cornerEdges[idx % cornerEdges.length] };
+  if(serie==='vira' || serie==='pix') return { type:'line', ...wallEdges[idx % wallEdges.length] };
+  // slot, cube, dark, tetra, tetra3d -> cornisa de techo
+  return { type:'line', ...ceilingEdges[idx % ceilingEdges.length] };
+}
+
+function neonColorHex(cct) {
+  const rgb = (NEON_GLOW[cct]||'255,195,90').split(',').map(Number);
+  return (rgb[0]<<16) + (rgb[1]<<8) + rgb[2];
+}
+
+function buildRoom3D() {
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x09090c);
+
+  const w=ROOM.w, d=ROOM.d, h=ROOM.h;
+  const wallMat = new THREE.MeshStandardMaterial({ color:0x1c1c22, roughness:0.95, metalness:0.05, side:THREE.DoubleSide });
+  const floorMat = new THREE.MeshStandardMaterial({ color:0x2a2a30, roughness:0.85, metalness:0.05, side:THREE.DoubleSide });
+
+  // Suelo
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(w,d), floorMat);
+  floor.rotation.x = -Math.PI/2;
+  scene.add(floor);
+
+  // Pared trasera
+  const back = new THREE.Mesh(new THREE.PlaneGeometry(w,h), wallMat);
+  back.position.set(0,h/2,-d/2);
+  scene.add(back);
+
+  // Pared izquierda
+  const left = new THREE.Mesh(new THREE.PlaneGeometry(d,h), wallMat);
+  left.rotation.y = Math.PI/2;
+  left.position.set(-w/2,h/2,0);
+  scene.add(left);
+
+  // Pared derecha
+  const right = new THREE.Mesh(new THREE.PlaneGeometry(d,h), wallMat);
+  right.rotation.y = -Math.PI/2;
+  right.position.set(w/2,h/2,0);
+  scene.add(right);
+
+  // Líneas de borde (wireframe sutil) para dar sensación de caja
+  const edgesGeo = new THREE.EdgesGeometry(new THREE.BoxGeometry(w,h,d));
+  const edgesMat = new THREE.LineBasicMaterial({ color:0x3a3a44 });
+  const edges = new THREE.LineSegments(edgesGeo, edgesMat);
+  edges.position.set(0,h/2,0);
+  scene.add(edges);
+
+  // Luz ambiente tenue
+  scene.add(new THREE.AmbientLight(0x222233, 0.7));
+  const fill = new THREE.DirectionalLight(0xffffff, 0.15);
+  fill.position.set(3,6,4);
+  scene.add(fill);
+
+  return scene;
+}
+
+function addNeonToScene(scene, placement, cct, label) {
+  const colorHex = neonColorHex(cct);
+  const color = new THREE.Color(colorHex);
+
+  function addTube(from, to) {
+    const a = new THREE.Vector3(...from);
+    const b = new THREE.Vector3(...to);
+    const dir = new THREE.Vector3().subVectors(b,a);
+    const len = dir.length();
+    const mid = new THREE.Vector3().addVectors(a,b).multiplyScalar(0.5);
+
+    // Núcleo brillante
+    const core = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.03,0.03,len,8),
+      new THREE.MeshStandardMaterial({ color:0xffffff, emissive:color, emissiveIntensity:2.2 })
+    );
+    core.position.copy(mid);
+    core.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), dir.clone().normalize());
+    scene.add(core);
+
+    // Halo de luz alrededor (más grueso, semitransparente)
+    const glow = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.12,0.12,len,8),
+      new THREE.MeshBasicMaterial({ color:colorHex, transparent:true, opacity:0.18 })
+    );
+    glow.position.copy(mid);
+    glow.quaternion.copy(core.quaternion);
+    scene.add(glow);
+
+    // Luz puntual de color
+    const light = new THREE.PointLight(colorHex, 1.2, Math.max(len*1.5, 3));
+    light.position.copy(mid);
+    scene.add(light);
+  }
+
+  if(placement.type === 'ring') {
+    const geo = new THREE.TorusGeometry(placement.radius, 0.03, 12, 48);
+    const mesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color:0xffffff, emissive:color, emissiveIntensity:2.2 }));
+    mesh.position.set(...placement.center);
+    mesh.rotation.x = Math.PI/2;
+    scene.add(mesh);
+    const glow = new THREE.Mesh(
+      new THREE.TorusGeometry(placement.radius, 0.1, 12, 48),
+      new THREE.MeshBasicMaterial({ color:colorHex, transparent:true, opacity:0.16 })
+    );
+    glow.position.copy(mesh.position); glow.rotation.x = Math.PI/2;
+    scene.add(glow);
+    const light = new THREE.PointLight(colorHex, 1.4, 6);
+    light.position.copy(mesh.position);
+    scene.add(light);
+  } else {
+    addTube(placement.from, placement.to);
+  }
+}
+
+function updateCamera3D() {
+  const t = three3d;
+  const x = t.target.x + t.radius*Math.sin(t.phi)*Math.sin(t.theta);
+  const y = t.target.y + t.radius*Math.cos(t.phi);
+  const z = t.target.z + t.radius*Math.sin(t.phi)*Math.cos(t.theta);
+  t.camera.position.set(x,y,z);
+  t.camera.lookAt(t.target);
+}
+
+function open3DView() {
+  if(lineas.length === 0) {
+    addMsg('nav','Necesito al menos una línea confirmada en el presupuesto para generar la maqueta 3D.');
+    return;
+  }
+  const modal = document.getElementById('modal3d');
+  modal.classList.add('open');
+  const container = document.getElementById('three-container');
+  container.innerHTML = '';
+
+  const scene = buildRoom3D();
+  three3d.scene = scene;
+  three3d.target = new THREE.Vector3(0, ROOM.h/2, 0);
+  three3d.theta = Math.PI*0.32;
+  three3d.phi = Math.PI*0.36;
+  three3d.radius = Math.max(ROOM.w,ROOM.d,ROOM.h)*1.7;
+
+  const w = container.clientWidth, h = container.clientHeight;
+  three3d.camera = new THREE.PerspectiveCamera(45, w/h, 0.1, 100);
+  three3d.renderer = new THREE.WebGLRenderer({ antialias:true });
+  three3d.renderer.setSize(w,h);
+  container.appendChild(three3d.renderer.domElement);
+
+  // Añadir cada línea a la escena + leyenda
+  let legendHtml = '';
+  const placedByType = { line_ceiling:0, line_floor:0, line_corner:0, line_wall:0 };
+  lineas.forEach((l, idx) => {
+    const d = ND[l.serie];
+    let group = 'line_ceiling';
+    if(l.serie==='forza') group='line_floor';
+    else if(l.serie==='halo') group='ring';
+    else if(l.serie==='apex') group='line_corner';
+    else if(l.serie==='vira'||l.serie==='pix') group='line_wall';
+    const placeIdx = group==='ring' ? 0 : (placedByType[group]||0);
+    if(group!=='ring') placedByType[group] = placeIdx+1;
+
+    const placement = neonPlacement(l.serie, placeIdx);
+    addNeonToScene(scene, placement, l.cct, d.name);
+
+    const rgb = (NEON_GLOW[l.cct]||'255,195,90');
+    legendHtml += `<div class="legend-item">
+      <div class="legend-swatch" style="background:rgb(${rgb});color:rgb(${rgb})"></div>
+      <div>
+        <div class="legend-name">${d.name} · ${l.cct} · ${l.metros}m</div>
+        <div class="legend-pos">${placement.label}</div>
+      </div>
+    </div>`;
+  });
+  document.getElementById('legendContent').innerHTML = legendHtml;
+
+  updateCamera3D();
+
+  // Controles de arrastre
+  const onDown = (e) => {
+    three3d.dragging = true;
+    const p = e.touches ? e.touches[0] : e;
+    three3d.lastX = p.clientX; three3d.lastY = p.clientY;
+  };
+  const onMove = (e) => {
+    if(!three3d.dragging) return;
+    const p = e.touches ? e.touches[0] : e;
+    const dx = p.clientX - three3d.lastX;
+    const dy = p.clientY - three3d.lastY;
+    three3d.lastX = p.clientX; three3d.lastY = p.clientY;
+    three3d.theta -= dx*0.006;
+    three3d.phi -= dy*0.006;
+    three3d.phi = Math.max(0.15, Math.min(Math.PI-0.15, three3d.phi));
+    updateCamera3D();
+  };
+  const onUp = () => { three3d.dragging = false; };
+  const onWheel = (e) => {
+    e.preventDefault();
+    three3d.radius *= (1 + e.deltaY*0.001);
+    three3d.radius = Math.max(2, Math.min(20, three3d.radius));
+    updateCamera3D();
+  };
+
+  container.addEventListener('mousedown', onDown);
+  window.addEventListener('mousemove', onMove);
+  window.addEventListener('mouseup', onUp);
+  container.addEventListener('touchstart', onDown, {passive:true});
+  container.addEventListener('touchmove', onMove, {passive:true});
+  container.addEventListener('touchend', onUp);
+  container.addEventListener('wheel', onWheel, {passive:false});
+
+  three3d._cleanup = () => {
+    container.removeEventListener('mousedown', onDown);
+    window.removeEventListener('mousemove', onMove);
+    window.removeEventListener('mouseup', onUp);
+    container.removeEventListener('wheel', onWheel);
+  };
+
+  function animate() {
+    three3d.raf = requestAnimationFrame(animate);
+    three3d.renderer.render(three3d.scene, three3d.camera);
+  }
+  animate();
+}
+
+function close3DView() {
+  const modal = document.getElementById('modal3d');
+  modal.classList.remove('open');
+  if(three3d.raf) cancelAnimationFrame(three3d.raf);
+  if(three3d._cleanup) three3d._cleanup();
+  if(three3d.renderer) {
+    three3d.renderer.dispose();
+    const container = document.getElementById('three-container');
+    container.innerHTML = '';
+  }
+}
+
+// ════════════════════════════════════════════
 // INIT
 // ════════════════════════════════════════════
 function init() {
@@ -1195,4 +1501,3 @@ window.addEventListener('load', init);
 </script>
 </body>
 </html>
-
