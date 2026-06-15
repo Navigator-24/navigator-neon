@@ -1,5 +1,4 @@
 
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -179,14 +178,14 @@ body{background:var(--bg);color:var(--white);font-family:'Syne',sans-serif;font-
         <button class="photo-remove" onclick="removePhoto()">✕</button>
       </div>
       <div class="input-row">
-        <button class="photo-btn" onclick="document.getElementById('photoInput').click()" title="Subir foto">📷</button>
+        <button class="photo-btn" onclick="document.getElementById('photoInput').click()" title="Subir foto o plano del espacio">📷</button>
         <input type="file" id="photoInput" accept="image/jpeg,image/png,image/gif,image/webp" style="display:none" onchange="handlePhoto(event)">
         <textarea class="input-box" id="inputBox" rows="1"
           placeholder="Describe tu proyecto... ej: 8 metros barra negra, cálido, sin driver"
           onkeydown="handleKey(event)"></textarea>
         <button class="send-btn" id="sendBtn" onclick="sendMessage()">➤</button>
       </div>
-      <div class="input-hint">Lenguaje natural · 📷 foto del espacio · Enter enviar · Shift+Enter nueva línea</div>
+      <div class="input-hint">Lenguaje natural · 📷 foto o plano (JPG/PNG — si tu plano es PDF, haz una captura) · Enter enviar · Shift+Enter nueva línea</div>
     </div>
   </div>
 
@@ -368,7 +367,7 @@ function handlePhoto(e) {
       lastPhoto = {b64, mt, du};
       document.getElementById('photoThumb').src = du;
       document.getElementById('photoPreview').style.display = 'block';
-      document.getElementById('inputBox').placeholder = '✓ Foto cargada — describe qué necesitas o pulsa enviar';
+      document.getElementById('inputBox').placeholder = '✓ Imagen cargada — describe qué necesitas (ej. \'calcula el perímetro del techo\') o pulsa enviar';
       document.getElementById('inputBox').focus();
     };
     img.src = ev.target.result;
@@ -1066,7 +1065,15 @@ REGLAS DE RESPUESTA:
 5. Tú SÍ tienes los precios del catálogo 2026 — úsalos directamente.
 6. La simulación visual y el presupuesto PDF los genera la app automáticamente — no los menciones como tareas tuyas.
 7. EL PRESUPUESTO ES MULTILÍNEA: el usuario puede pedir varias series en el mismo proyecto (ej: "y además 5 metros de Apex en las esquinas"). Cada vez que detectes una NUEVA línea con serie+temperatura+metros, devuelve CONFIG igual — la app la añade automáticamente al presupuesto sin borrar las anteriores.
-8. Si el usuario dice "añade otra línea", "y también necesito...", "además quiero..." trátalo como una nueva línea independiente.`;
+8. Si el usuario dice "añade otra línea", "y también necesito...", "además quiero..." trátalo como una nueva línea independiente.
+
+LECTURA DE PLANOS DE ARQUITECTO (cuando la imagen recibida es un plano técnico/plano de planta, no una foto real del espacio):
+9. Identifica que es un plano por sus características: vista en planta (desde arriba), líneas técnicas, cotas numéricas (medidas en metros o cm), simbología de puertas/ventanas/mobiliario, escala indicada.
+10. Lee TODAS las cotas (medidas) visibles en el plano. Si hay una escala indicada (ej. "1:50", "1:100") y faltan cotas en algún tramo, puedes estimar proporcionalmente midiendo el dibujo y aplicando la escala — indícalo como estimación.
+11. Identifica la zona donde el usuario quiere instalar el neón (perímetro de techo/cornisa, zócalo, barra, mostrador, escalera, etc. — pregúntalo si no está claro en el mensaje del usuario).
+12. Suma las cotas relevantes para calcular los metros lineales totales de esa zona. Redondea a metros enteros (hacia arriba si hay duda, porque Navigator sirve desde 1 metro exacto y es mejor pedir un poco más que de menos).
+13. NUNCA vuelques el resultado directo en CONFIG la primera vez. En su lugar, presenta el cálculo de forma transparente: qué cotas has sumado y el total estimado, y pregunta "¿Confirmas estos X metros o prefieres ajustarlos?". Solo incluye CONFIG con esos metros cuando el usuario confirme o dé un número (propio o ajustado).
+14. Si el plano no tiene cotas legibles o la calidad no permite leerlas con fiabilidad, dilo claramente y pide al usuario que indique los metros aproximados — no inventes números.`;
 }
 
 // ════════════════════════════════════════════
@@ -1178,7 +1185,7 @@ function handleKey(e) {
 // ════════════════════════════════════════════
 function init() {
   addMsg('nav',
-    '¡Hola! Soy el configurador de neones Navigator. Describe tu proyecto y te recomendaré la serie correcta, con el presupuesto desglosado en el panel derecho.<br><br>Puedes pedir <strong>varias líneas en el mismo proyecto</strong> — por ejemplo, configura una serie, y luego escribe "y además necesito..." para añadir otra. También puedes subir una <strong>foto del espacio</strong> con 📷 para ver cómo quedaría el neón instalado.',
+    '¡Hola! Soy el configurador de neones Navigator. Describe tu proyecto y te recomendaré la serie correcta, con el presupuesto desglosado en el panel derecho.<br><br>Puedes pedir <strong>varias líneas en el mismo proyecto</strong> — por ejemplo, configura una serie, y luego escribe "y además necesito..." para añadir otra.<br><br>También puedes subir con 📷 una <strong>foto del espacio</strong> (para ver cómo quedaría el neón instalado) o un <strong>plano de arquitecto</strong> (leo las cotas y calculo los metros lineales por ti).',
     ['Barra de bar negra cálido','Foseado sin driver 230V','Empotrar en encimera','Suelo transitable jardín','Rótulo con RGB','Esquinas de mueble']
   );
   updateSidebar();
@@ -1188,3 +1195,4 @@ window.addEventListener('load', init);
 </script>
 </body>
 </html>
+
