@@ -200,7 +200,10 @@ body{background:var(--bg);color:var(--white);font-family:'Syne',sans-serif;font-
       <div id="legendContent"></div>
     </div>
   </div>
-  <div class="modal3d-hint">Arrastra para rotar · Rueda del ratón para zoom · Maqueta orientativa, no a escala real</div>
+  <div class="modal3d-hint" style="display:flex;align-items:center;justify-content:center;gap:18px;">
+    <span>Arrastra para rotar · Rueda del ratón para zoom · Maqueta orientativa, no a escala real</span>
+    <button id="capture3DBtn" onclick="capture3DShot()" style="background:var(--y2);border:1px solid var(--y3);color:var(--y);padding:6px 14px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:1.5px;cursor:pointer;white-space:nowrap;">📸 Usar esta vista en el PDF</button>
+  </div>
 </div>
 
 <header class="hdr">
@@ -977,7 +980,8 @@ function printBudget() {
       <div class="bp-spec"><span class="bp-spec-l">Potencia</span><span class="bp-spec-v">${d.watts}W/m · Total ${Math.round(d.watts*l.metros)}W</span></div>
       <div class="bp-spec"><span class="bp-spec-l">Servicio</span><span class="bp-spec-v">A metro · Sellado de fábrica</span></div>
       <div class="bp-spec"><span class="bp-spec-l">Garantía / Vida útil</span><span class="bp-spec-v">5 años · 50.000h</span></div>
-    </div>`;
+    </div>
+    ${room3DShots[idx] ? `<div class="bp-render"><img src="${room3DShots[idx]}"><div class="bp-render-cap">Maqueta 3D · Línea ${idx+1} · ${d.name} ${l.cct}</div></div>` : ''}`;
 
     // Material row — neón
     allRows += `<tr>
@@ -1066,6 +1070,7 @@ function printBudget() {
 function resetAll() {
   cfg={serie:null,cct:null,metros:null};
   lineas=[];
+  room3DShots={};
   history.length=0;
   lastPhoto=null; pendingPhoto=null;
   document.getElementById('messages').innerHTML='';
@@ -1228,6 +1233,7 @@ function handleKey(e) {
 let three3d = { scene:null, camera:null, renderer:null, raf:null,
   theta:0, phi:0, radius:5, target:null,
   dragging:false, lastX:0, lastY:0, activeIdx:0 };
+let room3DShots = {}; // idx de línea -> dataURL capturada para el PDF
 
 const ROOM = { w:4, d:3.5, h:2.6 }; // dimensiones genéricas por sala (m)
 
@@ -1447,8 +1453,23 @@ function renderTabs() {
   const tabs = document.getElementById('modal3dTabs');
   tabs.innerHTML = lineas.map((l,i) => {
     const d = ND[l.serie];
-    return `<button class="modal3d-tab ${i===three3d.activeIdx?'active':''}" onclick="selectLine3D(${i})">${i+1} · ${d.name} ${l.cct}</button>`;
+    const saved = room3DShots[i] ? ' ✓' : '';
+    return `<button class="modal3d-tab ${i===three3d.activeIdx?'active':''}" onclick="selectLine3D(${i})">${i+1} · ${d.name} ${l.cct}${saved}</button>`;
   }).join('');
+}
+
+function capture3DShot() {
+  if(!three3d.renderer) return;
+  // Forzar un render fresco antes de capturar
+  three3d.renderer.render(three3d.scene, three3d.camera);
+  room3DShots[three3d.activeIdx] = three3d.renderer.domElement.toDataURL('image/jpeg', 0.9);
+  renderTabs();
+  const btn = document.getElementById('capture3DBtn');
+  if(btn) {
+    const original = btn.textContent;
+    btn.textContent = '✓ Vista guardada para el PDF';
+    setTimeout(() => { btn.textContent = original; }, 1600);
+  }
 }
 
 function selectLine3D(idx) {
@@ -1495,7 +1516,7 @@ function open3DView() {
 
   const w = container.clientWidth, h = container.clientHeight;
   three3d.camera = new THREE.PerspectiveCamera(45, w/h, 0.1, 100);
-  three3d.renderer = new THREE.WebGLRenderer({ antialias:true });
+  three3d.renderer = new THREE.WebGLRenderer({ antialias:true, preserveDrawingBuffer:true });
   three3d.renderer.setSize(w,h);
   container.appendChild(three3d.renderer.domElement);
 
