@@ -636,6 +636,191 @@ const LUMS = {
     why:'Lineal 1200mm enlazable — crea instalaciones continuas de cualquier longitud con CCT selector.',
     unit:'ud.'
   },
+  // ── CARRIL / RETAIL ──
+  beam:{
+    name:'Beam', categoria:'Foco carril trifásico zoom CRI>95',
+    desc:'Foco carril trifásico 30W zoom variable 15°-60° · CRI>95 · CCT selector',
+    w:'168mm', ip:'IP40', v:'230V', cri:'>95', driverInt:true,
+    watts:30, angulo:'15-60° zoom', vida:'50.000h',
+    skus:{
+      '2700K-4000K-6000K':{ref:'83753',lm:3000,pvp:114.90},
+      '2700K-4000K-6000K (B)':{ref:'83754',lm:3000,pvp:114.90},
+    },
+    kw:['beam','carril','trifasico','zoom','variable','cri95','retail','museo','joyeria','tienda'],
+    why:'Zoom variable 15°-60° con anillo de apertura. CRI>95 — el más alto para retail y museos.',
+    unit:'ud.'
+  },
+  cookie:{
+    name:'Cookie', categoria:'Foco carril trifásico CRI>97',
+    desc:'Foco carril trifásico 30W ópticas intercambiables · CRI>97 · rotación 350°',
+    w:'80mm', ip:'IP20', v:'230V', cri:'>97', driverInt:true,
+    watts:30, angulo:'15-50°', vida:'50.000h',
+    skus:{
+      '2700K-4000K-6000K':{ref:'83495',lm:2900,pvp:129.00},
+    },
+    kw:['cookie','carril','trifasico','cri97','opticas intercambiables','alta fidelidad','museo','joyeria','arte'],
+    why:'CRI>97 — la máxima fidelidad cromática del catálogo. Ópticas intercambiables, rotación 350°.',
+    unit:'ud.'
+  },
+  venus:{
+    name:'Venus', categoria:'Foco carril trifásico CRI>97',
+    desc:'Foco carril trifásico 20-30W · CRI>97 · Cree+Osram · IP20',
+    w:'125mm', ip:'IP20', v:'230V', cri:'>97', driverInt:true,
+    angulo:'60-90°', vida:'50.000h',
+    skus:{
+      '20W 3000K':{ref:'91150',watts:20,lm:2100,pvp:107.20},
+      '20W 4000K':{ref:'91151',watts:20,lm:2200,pvp:107.20},
+      '30W 3000K':{ref:'82755',watts:30,lm:2850,pvp:118.45},
+      '30W 4000K':{ref:'82756',watts:30,lm:2900,pvp:118.45},
+    },
+    kw:['venus','carril','cri97','20w','30w','trifasico','cree','osram','alta fidelidad'],
+    why:'CRI>97 con chips Cree + Osram. La referencia premium para galerías, joyerías y alta costura.',
+    unit:'ud.'
+  },
+  boston_or:{
+    name:'Boston Orientable', categoria:'Foco carril orientable CCT',
+    desc:'Foco de carril orientable 40W CCT selector · 350° rotación · IP40',
+    w:'195mm', ip:'IP40', v:'230V', cri:'>80', driverInt:true,
+    watts:40, angulo:'45°', vida:'30.000h',
+    skus:{
+      '3000K-4000K-6000K':{ref:'83486',lm:3800,pvp:99.00},
+    },
+    kw:['boston orientable','carril orientable','orientable','40w','cct','trifasico','tienda','hosteleria'],
+    why:'40W con CCT selector y 350° de orientación. El orientable más completo de la gama carril.',
+    unit:'ud.'
+  },
+  vector:{
+    name:'Vector', categoria:'Foco carril premium CCT 2700K-7000K',
+    desc:'Foco carril trifásico 32W · toda la gama de temperatura 2700K-7000K · ópticas enfocables',
+    w:'88mm', ip:'IP20', v:'230V', cri:'>90', driverInt:true,
+    watts:32, angulo:'variable', vida:'50.000h',
+    skus:{
+      '2700K-7000K':{ref:'83607',lm:3200,pvp:649.00},
+    },
+    kw:['vector','carril premium','tunable white','2700k-7000k','opticas','enfocable','museo','premium'],
+    why:'Toda la gama de temperatura en un solo foco (2700K-7000K). Ópticas enfocables personalizables.',
+    unit:'ud.'
+  },
+  janus:{
+    name:'Janus', categoria:'Lineal carril trifásico 1200mm',
+    desc:'Luminaria lineal trifásica 40-80W 1200mm · 130 lm/W · UGR<19 · CRI>90',
+    w:'1200×65mm', ip:'IP20', v:'230V', cri:'>90', driverInt:true,
+    angulo:'60-130°', vida:'50.000h',
+    skus:{
+      '40W 4000K':{ref:'83757',watts:40,lm:5000,pvp:109.90},
+      '80W 4000K (2x40W)':{ref:'83755',watts:80,lm:10000,pvp:205.99},
+      '24W CCT':{ref:'83815',watts:24,lm:3000,pvp:34.90},
+    },
+    kw:['janus','lineal carril','trifasico lineal','130lm/w','ugr19','oficina lineal','retail lineal'],
+    why:'Lineal trifásica 1200mm — 130 lm/W y UGR<19. Para oficinas y retail con carril trifásico.',
+    unit:'ud.'
+  },
+  kefi:{
+    name:'Kefi', categoria:'Portalámparas / aplique GU10',
+    desc:'Aplique/portalámparas GU10 orientable · interior · CRI>80',
+    w:'95-187mm', ip:'IP20', v:'230V', cri:'>80', driverInt:false,
+    angulo:'orientable', vida:'50.000h',
+    skus:{
+      'GU10 simple':{ref:'82264',lm:null,pvp:26.80},
+      'GU10 doble':{ref:'82268',lm:null,pvp:40.20},
+    },
+    kw:['kefi','gu10','portalamparas','aplique','orientable','flexo','interior','decorativo'],
+    why:'Portalámparas GU10 orientable — compatible con cualquier bombilla GU10 del mercado.',
+    unit:'ud.'
+  },
+  zenit:{
+    name:'Zenit', categoria:'Aplique/plafón decorativo interior',
+    desc:'Aplique de pared y techo decorativo interior · múltiples acabados · IP20',
+    w:'75mm', ip:'IP20', v:'230V', cri:'>80', driverInt:true,
+    angulo:'120°', vida:'30.000h',
+    skus:{
+      'Redondo':{ref:'21878',lm:null,pvp:14.65},
+      'Cuadrado':{ref:'21892',lm:null,pvp:14.95},
+    },
+    kw:['zenit','aplique','plafon','decorativo','interior','techo pared','economico','residencial'],
+    why:'Aplique/plafón decorativo de entrada — múltiples acabados y dos formatos. Muy competitivo.',
+    unit:'ud.'
+  },
+  luka:{
+    name:'Luka', categoria:'Panel LED gran formato 55W',
+    desc:'Panel LED 55W 1200×600mm · 5.400-5.600 lm · UGR<19 · Flicker free',
+    w:'1200×600mm', ip:'IP20', v:'230V', cri:'>80', driverInt:true,
+    watts:55, angulo:'120°', vida:'50.000h',
+    skus:{
+      '3000K':{ref:'83589',lm:5400,pvp:126.85},
+      '4000K':{ref:'22028',lm:5500,pvp:126.85},
+      '6000K':{ref:'22035',lm:5600,pvp:126.85},
+    },
+    kw:['luka','panel grande','1200x600','55w','ugr19','flicker free','oficina grande','nave','almacen'],
+    why:'Panel 1200×600mm — el formato grande para naves, almacenes y grandes oficinas. 5.500 lm.',
+    unit:'ud.'
+  },
+  // ── APLIQUES EXTERIOR ──
+  bosco:{
+    name:'Bosco', categoria:'Aplique exterior IP65 CCT',
+    desc:'Aplique de pared exterior 10W IP65 · CCT selector · CRI>80 · 3 acabados',
+    w:'150×100mm', ip:'IP65', v:'230V', cri:'>80', driverInt:true,
+    watts:10, angulo:'90°', vida:'50.000h',
+    skus:{
+      '3000K':{ref:'82254',lm:660,pvp:48.20},
+      '3000K (B)':{ref:'82255',lm:660,pvp:48.20},
+      'CCT 2700K-3000K-4000K':{ref:'83550',lm:800,pvp:50.75},
+    },
+    kw:['bosco','aplique exterior','ip65','fachada','entrada','jardin','terraza','exterior decorativo'],
+    why:'Aplique exterior IP65 con CCT selector — elegante y funcional para fachadas y entradas.',
+    unit:'ud.'
+  },
+  deka:{
+    name:'Deka', categoria:'Aplique exterior IP65 orientable',
+    desc:'Aplique exterior IP65 6-7,5W orientable 300° · Cree · múltiples acabados',
+    w:'120×130mm', ip:'IP65', v:'230V', cri:'>80', driverInt:true,
+    angulo:'orientable 300°', vida:'50.000h',
+    skus:{
+      '7,5W 3000K':{ref:'82252',watts:7.5,lm:420,pvp:56.45},
+      '7,5W 3000K (B)':{ref:'82253',watts:7.5,lm:420,pvp:56.45},
+      '6W 3000K':{ref:'82260',watts:6,lm:270,pvp:39.50},
+    },
+    kw:['deka','aplique exterior','orientable','ip65','fachada','cree','jardin','dirección'],
+    why:'Orientable 300° — dirige la luz exactamente donde quieres. Chip Cree, IP65.',
+    unit:'ud.'
+  },
+  pylos:{
+    name:'Pylos', categoria:'Aplique exterior IP65 CCT',
+    desc:'Aplique exterior IP65 2x6W CCT selector · ángulo ajustable · CRI>80',
+    w:'120×175mm', ip:'IP65', v:'230V', cri:'>80', driverInt:true,
+    watts:12, angulo:'0-90° ajustable', vida:'30.000h',
+    skus:{
+      'CCT 2700K-3300K-4000K':{ref:'83834',lm:900,pvp:47.90},
+    },
+    kw:['pylos','aplique exterior','cct','ip65','angulo ajustable','fachada','jardin','doble'],
+    why:'Ángulo de luz 0-90° ajustable + CCT selector en un aplique exterior elegante y compacto.',
+    unit:'ud.'
+  },
+  linda:{
+    name:'Linda', categoria:'Aplique exterior IP65 CCT premium',
+    desc:'Aplique exterior IP65 10W CCT · ángulo ajustable · CRI>80 · premium',
+    w:'90×175mm', ip:'IP65', v:'230V', cri:'>80', driverInt:true,
+    watts:10, angulo:'ajustable', vida:'50.000h',
+    skus:{
+      'CCT 2700K-3000K-4000K':{ref:'83882',lm:700,pvp:60.55},
+    },
+    kw:['linda','aplique exterior premium','cct','ip65','angulo','fachada premium','villa','residencial'],
+    why:'El aplique exterior más premium — ángulo ajustable, CCT y acabados de calidad superior.',
+    unit:'ud.'
+  },
+  velum:{
+    name:'Velum', categoria:'Foco carril trifásico con gobos y palas',
+    desc:'Foco carril trifásico 30W · palas ajustables para proyecciones cuadradas · gobos personalizados · CRI>95',
+    w:'85×195mm', ip:'IP20', v:'230V', cri:'>95', driverInt:true,
+    watts:30, angulo:'15-45°', vida:'50.000h',
+    skus:{
+      '2700K-4000K-5700K':{ref:'83722',lm:3100,pvp:159.00},
+      '2700K-4000K-5700K (B)':{ref:'83723',lm:3100,pvp:159.00},
+    },
+    kw:['velum','carril','palas','gobos','proyeccion','cuadrado','teatral','escaparate','museo','accent'],
+    why:'Palas ajustables para proyecciones cuadradas desde cualquier ángulo + gobos personalizados. Único en carril.',
+    unit:'ud.'
+  },
 };
 
 function isLum(serie) { return !!LUMS[serie]; }
@@ -1495,6 +1680,28 @@ LUMINARIAS — Downlights y Paneles (se presupuestan por UNIDADES, no metros):
 - volta: Panel LED 38W 600×600 o 1200×300mm, UGR<19, Flicker free. PVP 52€-70,55€/ud. Uso: oficinas, hospitales, centros educativos.
 - horizon: Luminaria lineal 36W 1200mm enlazable en L/T/+, CCT selector 3000K-4000K-5700K, UGR<19. PVP 125€-135€/ud. Uso: oficinas lineales, salas de reuniones, espacios con diseño de iluminación continua.
 
+FOCOS DE CARRIL TRIFÁSICO (para instalaciones con carril trifásico):
+- beam: Foco carril 30W zoom variable 15°-60° CRI>95 CCT selector. PVP 114,90€/ud. Uso: retail, museos, donde el ángulo importa.
+- cookie: Foco carril 30W ópticas intercambiables CRI>97 rotación 350°. PVP ≈129€/ud. Uso: la máxima fidelidad cromática — arte, joyería.
+- venus: Foco carril 20-30W CRI>97 Cree+Osram. PVP 107,20€-118,45€/ud. Uso: galerías, alta costura, exposiciones.
+- boston_or: Foco carril orientable 40W CCT selector rotación 350°. PVP 99€/ud. Uso: hostelería y tiendas con carril.
+- vector: Foco carril 32W tunable 2700K-7000K ópticas enfocables. PVP 649€/ud. Uso: proyectos premium con control total de temperatura.
+- velum: Foco carril 30W palas ajustables para proyecciones cuadradas + gobos personalizados, CRI>95. PVP 159€/ud. Uso: escaparates teatrales, museos, proyecciones de marca.
+- janus: Lineal trifásica 1200mm 40-80W 130lm/W UGR<19 CRI>90. PVP 34,90€-205,99€/ud. Uso: retail y oficinas con carril trifásico.
+
+PANELES GRANDES:
+- luka: Panel LED 55W 1200×600mm UGR<19 Flicker free. PVP 126,85€/ud. Uso: naves, almacenes, grandes oficinas.
+
+APLIQUES DECORATIVOS INTERIOR:
+- kefi: Portalámparas GU10 orientable interior. PVP 26,80€-40,20€/ud. Uso: flexo, aplique con bombilla GU10 propia.
+- zenit: Aplique/plafón decorativo interior económico. PVP 14,65€-14,95€/ud. Uso: residencial entrada.
+
+APLIQUES EXTERIORES IP65:
+- bosco: Aplique exterior 10W IP65 CCT selector. PVP 48,20€-50,75€/ud. Uso: fachadas, entradas.
+- deka: Aplique exterior 6-7,5W IP65 orientable 300° Cree. PVP 39,50€-56,45€/ud. Uso: dirección de luz en exterior.
+- pylos: Aplique exterior 12W IP65 CCT ángulo 0-90° ajustable. PVP 47,90€/ud. Uso: fachadas elegantes.
+- linda: Aplique exterior 10W IP65 CCT premium. PVP 60,55€/ud. Uso: residencial premium, villas.
+
 IMPORTANTE — LUMINARIAS POR UNIDADES:
 Cuando el usuario pida downlights, focos o paneles (baku/boston/milan/mega/roma/aquiles/volta), el campo "metros" en CONFIG representa UNIDADES, no metros. Pregunta "¿cuántas unidades necesitas?" en vez de "¿cuántos metros?".
 Ejemplo: 6 downlights Roma 18W 4000K → CONFIG:{"serie":"roma","cct":"18W 4000K","metros":6}
@@ -1518,7 +1725,10 @@ REGLAS DE SELECCIÓN TIRA LED:
 sin punto de luz/efecto continuo/premium→cleo | cob corte libre/ultracompacta→lara | cob con 1800K/vela/hostelería→mara | cob económico/básico→leo | rgb y blanco/dinámico/escaparate→rgbwcct | máxima luminosidad/alta densidad/retail→galileo | ultra slim 5mm/cartelería/letras→lia (o nora si necesita máxima flexibilidad) | 230V exterior IP65 CRI90→fermi | 230V exterior IP67 RGB o monocolor Cree→cory | resto (iluminación general 24V)→newton
 
 REGLAS DE SELECCIÓN LUMINARIA:
-mini foco/joyería/expositor→baku | spot/acento/hostelería→boston | downlight básico/hogar/CCT económico→milan | húmedo/baño/cocina/IP54/CRI90→mega | downlight estándar/varios tamaños→roma | sensor/pasillo/2en1→aquiles | panel/oficina/UGR19/flicker free→volta | lineal/enlazable/regleta continua→horizon
+mini foco/joyería/expositor→baku | spot/acento/hostelería→boston | downlight básico/hogar/CCT económico→milan | húmedo/baño/cocina/IP54/CRI90→mega | downlight estándar/varios tamaños→roma | sensor/pasillo/2en1→aquiles | panel/oficina/UGR19/flicker free→volta | panel grande 1200x600→luka | lineal/enlazable interior→horizon | aplique exterior básico/fachada→bosco | aplique exterior orientable→deka | aplique exterior CCT elegante→pylos | aplique exterior premium/villa→linda | decorativo interior/gu10→kefi | aplique plafón económico→zenit
+
+FOCOS DE CARRIL TRIFÁSICO (cuando el usuario mencione "carril", "trifásico", "track"):
+zoom variable/ángulo ajustable→beam | máxima fidelidad CRI97/arte/joya→cookie o venus | orientable hostelería→boston_or | tunable white completo/premium→vector | palas/gobos/proyección cuadrada/teatral→velum | lineal trifásica/retail lineal→janus
 
 IMPORTANTE — CCT en CONFIG para tiras RGBW+CCT: usa el formato exacto de los SKUs, por ejemplo "RGB+3000K", "RGB+4000K" o "RGB+6000K". Para el resto de tiras y neones, usa el formato normal "2700K", "3000K", etc.
 
@@ -1666,8 +1876,10 @@ function lineCategory(serie) {
   if(serie==='rgbwcct') return 'strip_wall';
   if(STRIPS[serie]) return 'strip_ceiling';
   // Luminarias
-  if(serie==='volta') return 'lum_panel';
-  if(serie==='horizon') return 'lum_linear';
+  if(serie==='volta'||serie==='luka') return 'lum_panel';
+  if(serie==='horizon'||serie==='janus') return 'lum_linear';
+  if(serie==='bosco'||serie==='deka'||serie==='pylos'||serie==='linda') return 'lum_wall';
+  if(serie==='beam'||serie==='cookie'||serie==='venus'||serie==='boston_or'||serie==='vector'||serie==='velum') return 'lum_track';
   if(LUMS[serie]) return 'lum_spot';
   return 'ceiling'; // neón
 }
@@ -1940,6 +2152,45 @@ function buildSceneForLine(linea) {
     }
     cam = { theta:0.25, phi:0.75, radius:4.8, target:[0, h*0.7, -d*0.1] };
 
+  } else if(cat === 'lum_wall') {
+    // Aplique exterior en pared
+    const { w, d, h } = ROOM;
+    const colorHex5 = neonColorHex('2700K');
+    const positions = [[-w*0.25,-d*0.5+0.02],[0,-d*0.5+0.02],[w*0.25,-d*0.5+0.02]];
+    positions.forEach(([px,pz]) => {
+      const body = new THREE.Mesh(new THREE.BoxGeometry(0.1,0.18,0.08), new THREE.MeshStandardMaterial({color:0x9a9aa0,roughness:0.4,metalness:0.5}));
+      body.position.set(px, h*0.55, pz); scene.add(body);
+      const light = new THREE.PointLight(colorHex5, 0.8, 2.5);
+      light.position.set(px, h*0.45, pz+0.15); scene.add(light);
+      const glow = new THREE.Mesh(new THREE.SphereGeometry(0.06,8,8), new THREE.MeshBasicMaterial({color:colorHex5,transparent:true,opacity:0.3}));
+      glow.position.set(px, h*0.55, pz+0.05); scene.add(glow);
+    });
+    cam = { theta:0.15, phi:0.65, radius:4.8, target:[0, h*0.5, -d*0.2] };
+
+  } else if(cat === 'lum_track') {
+    // Foco de carril trifásico
+    const { w, d, h } = ROOM;
+    const colorHex6 = neonColorHex('4000K');
+    // Rail
+    const rail = new THREE.Mesh(new THREE.BoxGeometry(w*0.75, 0.04, 0.04), new THREE.MeshStandardMaterial({color:0x1a1a20,roughness:0.5,metalness:0.6}));
+    rail.position.set(0, h-0.02, -d*0.1); scene.add(rail);
+    // 3 spots on rail
+    [-w*0.25, 0, w*0.25].forEach((px,i) => {
+      const head = new THREE.Mesh(new THREE.CylinderGeometry(0.045,0.06,0.14,12), new THREE.MeshStandardMaterial({color:0x888890,roughness:0.3,metalness:0.7}));
+      head.position.set(px, h-0.1, -d*0.1);
+      // Rotate slightly
+      head.rotation.z = (i-1)*0.25;
+      scene.add(head);
+      const cone = new THREE.Mesh(new THREE.ConeGeometry(0.35,1.2,12,1,true), new THREE.MeshBasicMaterial({color:colorHex6,transparent:true,opacity:0.07,side:THREE.DoubleSide}));
+      cone.rotation.x = Math.PI + (i-1)*0.25;
+      cone.position.set(px + (i-1)*0.18, h-0.7, -d*0.1 + (i-1)*0.15);
+      scene.add(cone);
+      const pl = new THREE.PointLight(colorHex6, 0.7, 2.8);
+      pl.position.set(px + (i-1)*0.12, h-0.3, -d*0.1 + (i-1)*0.1);
+      scene.add(pl);
+    });
+    cam = { theta:0.3, phi:0.65, radius:5.0, target:[0, h*0.6, 0] };
+
   } else if(cat === 'lum_linear') {
     // Horizon: luminaria lineal empotrada en techo, enlazada en L o T
     const { w, d, h } = ROOM;
@@ -2058,6 +2309,8 @@ const CATEGORY_LABELS = {
   lum_spot:      'Downlight / Foco · empotrado en techo',
   lum_panel:     'Panel LED · empotrado en techo (600×600 o 1200×300mm)',
   lum_linear:    'Luminaria lineal empotrable · 1200mm enlazable en L, T o +',
+  lum_wall:      'Aplique de pared exterior · IP65',
+  lum_track:     'Foco de carril trifásico',
 };
 
 function updateCamera3D() {
