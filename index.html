@@ -382,6 +382,37 @@ const STRIPS = {
     kw:['rgbw','rgb y blanco','color y temperatura','dual','escaparate dinamico','ambiente cambiante'],
     why:'Combina color RGB y blanco regulable en la misma tira — máxima versatilidad de escenas.'
   },
+  fermi:{
+    name:'Fermi', categoria:'Tira 230V SCOB IP65',
+    desc:'Tira LED 230V SCOB 14W/m · IP65 · CRI>90 · gama de temperatura completa',
+    w:'10mm', ip:'IP65', v:'230V', cri:'>90', rollo:50,
+    corte:45,
+    skus:{
+      '1800K':{ref:'83835',watts:14,lm:1050,leds:286,pvp:19.50},
+      '2200K':{ref:'83836',watts:14,lm:1070,leds:286,pvp:19.50},
+      '2700K':{ref:'83837',watts:14,lm:1150,leds:286,pvp:19.50},
+      '3000K':{ref:'83838',watts:14,lm:1200,leds:286,pvp:19.50},
+      '4000K':{ref:'83839',watts:14,lm:1250,leds:286,pvp:19.50},
+      '6500K':{ref:'83840',watts:14,lm:1300,leds:286,pvp:19.50},
+    },
+    kw:['fermi','230v','sin driver','fachada','exterior','ip65','scob','cri90','instalacion directa'],
+    why:'Tira 230V SCOB sin driver · IP65 · CRI>90 · 6 temperaturas desde 1800K hasta 6500K.'
+  },
+  cory:{
+    name:'Cory', categoria:'Tira 230V IP67',
+    desc:'Tira LED 230V Cree IP67 monocolor o RGB · alta fiabilidad exterior',
+    w:'16mm', ip:'IP67', v:'230V', cri:'>80', rollo:50,
+    corte:50,
+    skus:{
+      '2700K':{ref:'83473',watts:14,lm:1200,leds:120,pvp:18.95},
+      '3000K':{ref:'83474',watts:14,lm:1250,leds:120,pvp:18.95},
+      '4000K':{ref:'83475',watts:14,lm:1300,leds:120,pvp:18.95},
+      '6000K':{ref:'83476',watts:14,lm:1375,leds:120,pvp:18.95},
+      'RGB':{ref:'83518',watts:12,lm:1200,leds:360,pvp:29.50},
+    },
+    kw:['cory','230v','ip67','exterior','sin driver','rgb exterior','sumergible','cree'],
+    why:'IP67 + 230V sin driver · Chip Cree · Monocolor o RGB · La tira exterior más robusta del catálogo.'
+  },
 };
 
 const STRIP_ACCS = [
@@ -404,6 +435,156 @@ function wattsStrip(serie, cct) {
   const s = STRIPS[serie]; if(!s) return 14.4;
   const sku = s.skus[cct] || Object.values(s.skus)[0];
   return sku ? sku.watts : 14.4;
+}
+
+// ════════════════════════════════════════════
+// LUMINARIAS — Downlights y Paneles (por ud.)
+// ════════════════════════════════════════════
+const LUMS = {
+  baku:{
+    name:'Baku', categoria:'Mini foco empotrable',
+    desc:'Mini spot empotrable COB 3W CCT · Ø30mm · UGR<19',
+    w:'30mm', ip:'IP40', v:'230V', cri:'>90', driverInt:true,
+    watts:3, angulo:'24°', vida:'30.000h',
+    skus:{
+      '3000K-4000K-6000K':{ref:'83703',lm:'280-300-320',pvp:19.90},
+      '3000K-4000K-6000K (blanco)':{ref:'83702',lm:'280-300-320',pvp:19.90},
+    },
+    kw:['mini foco','foco pequeño','empotrable pequeño','balizas','acento','joyeria','expositor'],
+    why:'El foco empotrable más compacto — 30mm de corte. Ideal para acentos, joyerías y expositores.',
+    unit:'ud.'
+  },
+  boston:{
+    name:'Boston', categoria:'Spot empotrable CCT',
+    desc:'Spot empotrable COB con selector CCT integrado · 5W-12W',
+    w:'35-65mm', ip:'IP20', v:'230V', cri:'>90', driverInt:true,
+    angulo:'24-40°', vida:'30.000h',
+    skus:{
+      '5W 1800K-2800K-4000K':{ref:'83829',watts:5,lm:'325/460/550',pvp:23.70},
+      '5W 3000K-4000K-6000K':{ref:'83488',watts:5,lm:'450/500/550',pvp:23.70},
+      '9W 1800K-2800K-4000K':{ref:'83830',watts:9,lm:'465/660/760',pvp:32.85},
+      '9W 3000K-4000K-6000K':{ref:'83489',watts:9,lm:'850/900/950',pvp:32.85},
+      '12W 3000K-4000K-6000K':{ref:'83491',watts:12,lm:'1150/1200/1250',pvp:39.50},
+    },
+    kw:['spot','foco','empotrable','cct','3 temperaturas','selector','carril','hosteleria','tienda'],
+    why:'Selector CCT integrado — 3 temperaturas en un mismo producto. No requiere cambio de lámpara.',
+    unit:'ud.'
+  },
+  milan:{
+    name:'Milán', categoria:'Downlight empotrable CCT',
+    desc:'Downlight empotrable 8W CCT · UGR<19 · accesorio estándar incluido',
+    w:'75mm', ip:'IP44', v:'230V', cri:'>80', driverInt:true,
+    watts:8, angulo:'60/100°', vida:'30.000h',
+    skus:{
+      '2700K-3000K-4000K':{ref:'83549',lm:'760/800/840',pvp:13.60},
+    },
+    kw:['downlight','empotrado','downlight cct','oficina','hogar','low cost','basico'],
+    why:'Downlight básico con selector CCT — accesorio estándar incluido. La referencia de entrada.',
+    unit:'ud.'
+  },
+  mega:{
+    name:'Mega', categoria:'Downlight grande IP54',
+    desc:'Downlight empotrable IP54 · 7W-50W · CRI>90 · Philips + Lifud',
+    w:'78-230mm', ip:'IP54', v:'230V', cri:'>90', driverInt:true,
+    angulo:'80°', vida:'50.000h',
+    skus:{
+      '7W 2700K':{ref:'83418',watts:7,lm:670,pvp:26.00},
+      '7W 3000K':{ref:'83418',watts:7,lm:770,pvp:26.00},
+      '7W 4000K':{ref:'83418',watts:7,lm:870,pvp:26.00},
+      '12W 3000K':{ref:'83419',watts:12,lm:1220,pvp:29.80},
+      '12W 4000K':{ref:'83419',watts:12,lm:1320,pvp:29.80},
+      '18W 3000K':{ref:'83420',watts:18,lm:1700,pvp:40.65},
+      '18W 4000K':{ref:'83420',watts:18,lm:1800,pvp:40.65},
+      '25W 3000K':{ref:'83421',watts:25,lm:2700,pvp:59.70},
+      '35W 3000K':{ref:'83422',watts:35,lm:3950,pvp:78.65},
+      '50W 3000K':{ref:'83423',watts:50,lm:5400,pvp:122.00},
+    },
+    kw:['mega','downlight grande','ip54','humedo','bano','cocina','exterior interior','cri90','alta calidad'],
+    why:'IP54 + CRI>90 + Philips. El downlight premium para húmedos y espacios de alta exigencia.',
+    unit:'ud.'
+  },
+  roma:{
+    name:'Roma', categoria:'Downlight empotrable estándar',
+    desc:'Downlight empotrable 6W-48W · gama amplia · CRI>80',
+    w:'75-575mm', ip:'IP40', v:'230V', cri:'>80', driverInt:true,
+    angulo:'120°', vida:'30.000h',
+    skus:{
+      '6W 3000K':{ref:'83454',watts:6,lm:400,pvp:7.40},
+      '6W 4000K':{ref:'83455',watts:6,lm:450,pvp:7.40},
+      '6W 6000K':{ref:'83456',watts:6,lm:500,pvp:7.40},
+      '7W 3000K':{ref:'71374',watts:7,lm:665,pvp:12.70},
+      '12W 3000K':{ref:'71789',watts:12,lm:1140,pvp:14.10},
+      '12W 4000K':{ref:'71791',watts:12,lm:1200,pvp:14.10},
+      '18W 3000K':{ref:'71761',watts:18,lm:1710,pvp:27.90},
+      '18W 4000K':{ref:'71798',watts:18,lm:1800,pvp:27.90},
+      '24W 3000K':{ref:'20574',watts:24,lm:2280,pvp:45.50},
+      '32W 3000K':{ref:'20581',watts:32,lm:3200,pvp:82.80},
+    },
+    kw:['roma','downlight estandar','empotrado basico','hogar','hotel','oficina','lowcost','varios tamaños'],
+    why:'La gama más completa de downlights — desde 6W hasta 48W, múltiples acabados y temperaturas.',
+    unit:'ud.'
+  },
+  aquiles:{
+    name:'Aquiles', categoria:'Downlight ajustable CCT + sensor',
+    desc:'Downlight ajustable 2 en 1 (superficie/empotrado) · Samsung · con sensor opcional',
+    w:'220mm', ip:'IP40', v:'230V', cri:'>80', driverInt:true,
+    angulo:'120°', vida:'30.000h',
+    skus:{
+      'Sin sensor':{ref:'82890',lm:'consultar',pvp:65.00},
+      'Con sensor':{ref:'82892',lm:'consultar',pvp:65.00},
+    },
+    kw:['aquiles','sensor movimiento','detector','dos en uno','superficie empotrado','samsung','versatil'],
+    why:'2 en 1: superficie o empotrado. Sensor de movimiento opcional integrado. Aros intercambiables.',
+    unit:'ud.'
+  },
+  volta:{
+    name:'Volta', categoria:'Panel LED',
+    desc:'Panel LED 38W · 600×600mm o 1200×300mm · UGR<19 · Flicker free',
+    w:'600×600 / 1200×300mm', ip:'IP20', v:'230V', cri:'>80', driverInt:true,
+    watts:38, angulo:'120°', vida:'50.000h',
+    skus:{
+      '3000K 600x600':{ref:'83587',lm:3700,pvp:70.55},
+      '4000K 600x600':{ref:'14194',lm:3800,pvp:52.00},
+      '6000K 600x600':{ref:'14195',lm:3900,pvp:52.00},
+      '4000K 1200x300':{ref:'21946',lm:3800,pvp:70.55},
+      '6000K 1200x300':{ref:'22011',lm:3900,pvp:70.55},
+    },
+    kw:['panel','panel led','techo plano','oficina','falso techo panel','ugr19','flicker free','volta'],
+    why:'Panel UGR<19 + Flicker free — el estándar para oficinas, hospitales y centros educativos.',
+    unit:'ud.'
+  },
+  horizon:{
+    name:'Horizon', categoria:'Lineal empotrable enlazable',
+    desc:'Luminaria lineal 36W 1200mm CCT enlazable · UGR<19 · CRI>80',
+    w:'1200×75mm', ip:'IP20', v:'220V', cri:'>80', driverInt:true,
+    watts:36, angulo:'90°', vida:'70.000h',
+    skus:{
+      '3000K-4000K-5700K (tramo inicio)':{ref:'83724',lm:4000,pvp:135.00},
+      '3000K-4000K-5700K (tramo intermedio)':{ref:'83784',lm:4000,pvp:125.00},
+    },
+    kw:['horizon','lineal','regleta','luminaria lineal','enlazable','techo lineal','oficina lineal','ugr19','continua'],
+    why:'Lineal 1200mm enlazable — crea instalaciones continuas de cualquier longitud con CCT selector.',
+    unit:'ud.'
+  },
+};
+
+function isLum(serie) { return !!LUMS[serie]; }
+
+function pvpLum(serie, cct) {
+  const s = LUMS[serie]; if(!s) return null;
+  const sku = s.skus[cct] || Object.values(s.skus)[0];
+  return sku ? sku.pvp : null;
+}
+function refLum(serie, cct) {
+  const s = LUMS[serie]; if(!s) return null;
+  const sku = s.skus[cct] || Object.values(s.skus)[0];
+  return sku ? sku.ref : null;
+}
+function wattsLum(serie, cct) {
+  const s = LUMS[serie]; if(!s) return null;
+  const sku = s.skus[cct] || Object.values(s.skus)[0];
+  if(sku && sku.watts) return sku.watts;
+  return s.watts || null;
 }
 
 const ACCS = {
@@ -455,33 +636,37 @@ function isStrip(serie) { return !!STRIPS[serie]; }
 function productInfo(serie) {
   if(isStrip(serie)) {
     const s = STRIPS[serie];
-    return {
-      name: s.name, w: s.w, ip: s.ip, ik: '', v: s.v, excl: false,
-      watts: null, // varía por cct, se calcula con wattsStrip
-      family: 'strip', categoria: s.categoria, rollo: s.rollo,
-    };
+    return { name:s.name, w:s.w, ip:s.ip, ik:'', v:s.v, excl:false,
+      watts:null, family:'strip', categoria:s.categoria, rollo:s.rollo };
+  }
+  if(isLum(serie)) {
+    const s = LUMS[serie];
+    return { name:s.name, w:s.w, ip:s.ip, ik:'', v:s.v, excl:false,
+      watts:s.watts||null, family:'lum', categoria:s.categoria, unit:s.unit };
   }
   const d = ND[serie];
-  return { ...d, family: 'neon' };
+  return { ...d, family:'neon' };
 }
 
 function pvpM(serie, cct) {
   if(isStrip(serie)) return pvpStrip(serie, cct);
+  if(isLum(serie)) return pvpLum(serie, cct);
   const d = ND[serie]; if(!d||!d.pvp) return null;
   if(typeof d.pvp==='object') return cct==='RGB'?d.pvp.rgb:d.pvp.mono;
   return d.pvp;
 }
 
-function getAccs(serie, metros) {
+function getAccs(serie, qty) {
   if(isStrip(serie)) {
     const s = STRIPS[serie];
-    const rollos = Math.ceil(metros/(s.rollo||5));
-    return STRIP_ACCS.map(a=>({...a, qty2:a.qty(metros,rollos), total:a.pvp?a.pvp*a.qty(metros,rollos):null}));
+    const rollos = Math.ceil(qty/(s.rollo||5));
+    return STRIP_ACCS.map(a=>({...a, qty2:a.qty(qty,rollos), total:a.pvp?a.pvp*a.qty(qty,rollos):null}));
   }
+  if(isLum(serie)) return []; // luminarias sin accesorios obligatorios en presupuesto básico
   const d = ND[serie];
-  const rollos = Math.ceil(metros/((d.rollo||5000)/1000));
+  const rollos = Math.ceil(qty/((d.rollo||5000)/1000));
   const list = ACCS[serie] || ACCS.new_series;
-  return list.map(a=>({...a, qty2:a.qty(metros,rollos), total:a.pvp?a.pvp*a.qty(metros,rollos):null}));
+  return list.map(a=>({...a, qty2:a.qty(qty,rollos), total:a.pvp?a.pvp*a.qty(qty,rollos):null}));
 }
 
 // ════════════════════════════════════════════
@@ -568,27 +753,34 @@ function removeTyping(){const t=document.getElementById('typing');if(t)t.remove(
 // ════════════════════════════════════════════
 function calcLineaTotals(linea) {
   const isS = isStrip(linea.serie);
+  const isL = isLum(linea.serie);
   const d = productInfo(linea.serie);
-  const ref = isS ? refStrip(linea.serie, linea.cct) : (ND[linea.serie].refs[linea.cct] || Object.values(ND[linea.serie].refs)[0]);
-  const pm = pvpM(linea.serie, linea.cct);
-  const metros = linea.metros;
-  const totalNeon = pm ? pm*metros : 0;
-  const watts = isS ? wattsStrip(linea.serie, linea.cct) : d.watts;
+  const qty = linea.metros; // para luminarias = unidades, para tiras/neón = metros
 
-  const accs = getAccs(linea.serie, metros);
+  let ref;
+  if(isS) ref = refStrip(linea.serie, linea.cct);
+  else if(isL) ref = refLum(linea.serie, linea.cct);
+  else ref = ND[linea.serie].refs[linea.cct] || Object.values(ND[linea.serie].refs)[0];
+
+  const pm = pvpM(linea.serie, linea.cct);
+  const totalNeon = pm ? pm*qty : 0;
+  const watts = isS ? wattsStrip(linea.serie, linea.cct) : (isL ? wattsLum(linea.serie, linea.cct) : d.watts);
+
+  const accs = getAccs(linea.serie, qty);
   const oblAcc = accs.filter(a=>!a.opt);
   const totalAcc = oblAcc.filter(a=>a.total).reduce((s,a)=>s+a.total,0);
 
   let totalDriver = 0, driverInfo = null;
-  if(d.v !== '230V') {
+  // Solo neón 24V lleva driver externo; tiras 24V también; luminarias 230V no
+  if(!isL && d.v !== '230V') {
     const exterior = !isS && ['forza','halo'].includes(linea.serie);
-    const {driver, qty, total} = selectDriver(Math.round(watts*metros), exterior);
+    const {driver, qty:dqty, total} = selectDriver(Math.round(watts*qty), exterior);
     totalDriver = total;
-    driverInfo = {driver, qty, total, exterior};
+    driverInfo = {driver, qty:dqty, total, exterior};
   }
 
   const subtotal = totalNeon + totalAcc + totalDriver;
-  return {d, ref, pm, metros, watts, totalNeon, totalAcc, totalDriver, driverInfo, subtotal, accs: oblAcc, isStrip:isS};
+  return {d, ref, pm, qty, watts, totalNeon, totalAcc, totalDriver, driverInfo, subtotal, accs:oblAcc, isStrip:isS, isLum:isL};
 }
 
 function addLinea(linea) {
@@ -642,7 +834,7 @@ function updateSidebar() {
       <div class="sb-series-block" style="position:relative;margin-bottom:8px;">
         <button onclick="removeLinea(${idx})" title="Eliminar línea" style="position:absolute;top:8px;right:8px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;line-height:1;padding:2px 6px;">✕</button>
         <div class="sb-series-name" style="font-size:18px;">${t.d.name} · ${l.cct}</div>
-        <div class="sb-series-sub">${l.metros}m · ${t.d.w} · ${t.subtotal.toFixed(2).replace('.',',')} €</div>
+        <div class="sb-series-sub">${t.isLum ? t.qty+" ud." : t.qty+"m"} · ${t.d.w} · ${t.subtotal.toFixed(2).replace('.',',')} €</div>
       </div>`;
     });
     html += `</div>`;
@@ -659,7 +851,7 @@ function updateSidebar() {
         ${d ? `<div class="sb-series-name">${d.name}</div><div class="sb-series-sub">${d.w} · ${d.ip} · ${d.v}${d.excl?' · ✦ Exclusivo':''}${d.family==='strip'?' · '+d.categoria:''}</div>` : '<div class="sb-empty" style="padding:4px 0;text-align:left;">Esperando serie...</div>'}
       </div>
       ${cfg.cct?`<div class="sb-row"><span class="sb-label">Temperatura</span><span class="sb-val y">${cfg.cct}</span></div>`:''}
-      ${cfg.metros?`<div class="sb-row"><span class="sb-label">Metros</span><span class="sb-val y">${cfg.metros} m exactos</span></div>`:''}
+      ${cfg.metros?`<div class="sb-row"><span class="sb-label">${d&&d.family==='lum'?'Unidades':'Metros'}</span><span class="sb-val y">${cfg.metros} ${d&&d.family==='lum'?'ud.':'m exactos'}</span></div>`:''}
       ${(cfg.metros && wattsCurr)?`<div class="sb-row"><span class="sb-label">Potencia</span><span class="sb-val">${Math.round(wattsCurr*cfg.metros)} W</span></div>`:''}
       ${pm?`<div class="sb-row"><span class="sb-label">€/metro</span><span class="sb-val">${pm.toFixed(2).replace('.',',')} €</span></div>`:''}
     </div>`;
@@ -1215,6 +1407,27 @@ TIRAS LED 24V (familia distinta del neón — sin perfil de silicona, van dentro
 - cleo: COB 24V, IP20, sin punto de luz (línea continua), corte cada 50mm. Temperaturas: 2700K/3000K/4000K. PVP 79,00€/m. Uso: foseados de diseño, arquitectura, efecto premium continuo.
 - leo: COB 24V económico, IP20, corte cada 45mm. Temperaturas: 3000K/4000K/6000K. PVP 70,55€/m. Uso: COB de entrada, efecto continuo a menor coste que Cleo.
 - rgbwcct: RGBW+CCT 24V, IP20, corte cada 100mm. Combina RGB + blanco regulable. SKUs con formato "RGB+3000K" / "RGB+4000K" / "RGB+6000K", PVP 76,15€/m. Uso: escaparates dinámicos, ambientes con escenas de color y blanco.
+- fermi: Tira 230V SCOB 14W/m, IP65, CRI>90. Temperaturas: 1800K/2200K/2700K/3000K/4000K/6500K. PVP 19,50€/m. SIN DRIVER. Uso: instalaciones exteriores o interiores sin fuente de alimentación.
+- cory: Tira 230V Cree 14W/m IP67 monocolor o RGB 12W/m. Temperaturas: 2700K/3000K/4000K/6000K/RGB. PVP 18,95€/m mono · 29,50€/m RGB. SIN DRIVER. Uso: exterior de alta exigencia IP67, piscinas, fachadas.
+
+LUMINARIAS — Downlights y Paneles (se presupuestan por UNIDADES, no metros):
+- baku: Mini foco empotrable 3W CCT tri-color, Ø30mm, IP40, CRI>90. PVP 19,90€/ud. Uso: joyerías, expositores, acentos pequeños.
+- boston: Spot empotrable COB 5W-12W CCT selector integrado, IP20. PVP 23,70€-39,50€/ud. Uso: hostelería, tiendas, acento en techo.
+- milan: Downlight 8W CCT selector, IP44, UGR<19, accesorio incluido. PVP 13,60€/ud. Uso: downlight básico hogar/oficina.
+- mega: Downlight gran formato IP54 7W-50W CRI>90, chip Philips. PVP 26€-122€/ud. Uso: baños, cocinas, zonas húmedas, alta exigencia.
+- roma: Downlight estándar 6W-48W múltiples acabados CRI>80. PVP 7,40€-82,80€/ud. Uso: la referencia de entrada más vendida.
+- aquiles: Downlight ajustable 2en1 superficie/empotrado + sensor movimiento opcional, Samsung. PVP 65€/ud. Uso: pasillos, baños, zonas con sensor.
+- volta: Panel LED 38W 600×600 o 1200×300mm, UGR<19, Flicker free. PVP 52€-70,55€/ud. Uso: oficinas, hospitales, centros educativos.
+- horizon: Luminaria lineal 36W 1200mm enlazable en L/T/+, CCT selector 3000K-4000K-5700K, UGR<19. PVP 125€-135€/ud. Uso: oficinas lineales, salas de reuniones, espacios con diseño de iluminación continua.
+
+IMPORTANTE — LUMINARIAS POR UNIDADES:
+Cuando el usuario pida downlights, focos o paneles (baku/boston/milan/mega/roma/aquiles/volta), el campo "metros" en CONFIG representa UNIDADES, no metros. Pregunta "¿cuántas unidades necesitas?" en vez de "¿cuántos metros?".
+Ejemplo: 6 downlights Roma 18W 4000K → CONFIG:{"serie":"roma","cct":"18W 4000K","metros":6}
+
+CUÁNDO RECOMENDAR NEÓN VS TIRA LED VS LUMINARIA:
+- LUMINARIA (downlight/panel): el usuario habla de "focos de techo", "downlights", "puntos de luz", "paneles de oficina" → recomienda luminaria.
+- TIRA LED: iluminación funcional/general en perfil de aluminio — falsos techos completos, armarios, estanterías.
+- NEÓN: efecto de línea de luz decorativa, rótulos, contornos, fachadas.
 
 CUÁNDO RECOMENDAR NEÓN VS TIRA LED:
 - NEÓN (las 10 series de arriba): cuando se busca un EFECTO DE LÍNEA DE LUZ VISIBLE, decorativo, con cuerpo de silicona — rótulos, foseados decorativos, contornos, perfiles de mobiliario, fachadas, elementos 3D.
@@ -1227,7 +1440,10 @@ REGLAS DE SELECCIÓN NEÓN:
 negro/oscuro→dark | sin driver/230V→vira | empotrar/encimera→slot | esquina/arista→apex | suelo/pisable→forza | dmx/consola→pix | 360°/colgante→halo | 3d/logotipo→tetra3d | rgb/color→cube | resto→tetra
 
 REGLAS DE SELECCIÓN TIRA LED:
-sin punto de luz/efecto continuo/premium→cleo | cob económico/básico→leo | rgb y blanco/dinámico/escaparate→rgbwcct | resto (iluminación general)→newton
+sin punto de luz/efecto continuo/premium→cleo | cob económico/básico→leo | rgb y blanco/dinámico/escaparate→rgbwcct | 230V exterior IP65 CRI90→fermi | 230V exterior IP67 RGB o monocolor Cree→cory | resto (iluminación general 24V)→newton
+
+REGLAS DE SELECCIÓN LUMINARIA:
+mini foco/joyería/expositor→baku | spot/acento/hostelería→boston | downlight básico/hogar/CCT económico→milan | húmedo/baño/cocina/IP54/CRI90→mega | downlight estándar/varios tamaños→roma | sensor/pasillo/2en1→aquiles | panel/oficina/UGR19/flicker free→volta | lineal/enlazable/regleta continua→horizon
 
 IMPORTANTE — CCT en CONFIG para tiras RGBW+CCT: usa el formato exacto de los SKUs, por ejemplo "RGB+3000K", "RGB+4000K" o "RGB+6000K". Para el resto de tiras y neones, usa el formato normal "2700K", "3000K", etc.
 
@@ -1313,7 +1529,7 @@ async function sendMessage() {
     if(m) {
       try {
         const c=JSON.parse(m[1]);
-        if(c.serie&&(ND[c.serie]||STRIPS[c.serie])) cfg.serie=c.serie;
+        if(c.serie&&(ND[c.serie]||STRIPS[c.serie]||LUMS[c.serie])) cfg.serie=c.serie;
         if(c.cct) cfg.cct=c.cct;
         if(c.metros&&!isNaN(c.metros)) cfg.metros=parseInt(c.metros);
         // Si la línea está completa, confirmarla automáticamente al presupuesto
@@ -1370,7 +1586,14 @@ function lineCategory(serie) {
   if(serie==='halo') return 'ring';
   if(serie==='apex') return 'corner';
   if(serie==='vira' || serie==='pix') return 'wall';
-  return 'ceiling'; // tetra3d, cube, slot, dark, tetra
+  // Tiras LED
+  if(serie==='rgbwcct') return 'strip_wall';
+  if(STRIPS[serie]) return 'strip_ceiling';
+  // Luminarias
+  if(serie==='volta') return 'lum_panel';
+  if(serie==='horizon') return 'lum_linear';
+  if(LUMS[serie]) return 'lum_spot';
+  return 'ceiling'; // neón
 }
 
 function neonColorHex(cct) {
@@ -1484,7 +1707,207 @@ function buildSceneForLine(linea) {
   const trimColor = isDark ? 0x0a0a0d : 0x4a4a52; // perfil negro vs aluminio
   let cam = { theta:0.5, phi:0.55, radius:5.2, target:[0,h/2,0] };
 
-  if(cat === 'ceiling') {
+  if(cat === 'strip_ceiling') {
+    // Perfil aluminio empotrado en el techo — ranura iluminada continua
+    const { w, d, h } = ROOM;
+    const len = w*0.82;
+
+    // Canal de aluminio empotrado en el techo
+    const channel = new THREE.Mesh(
+      new THREE.BoxGeometry(len, 0.05, 0.08),
+      new THREE.MeshStandardMaterial({ color:0x8a8a90, roughness:0.3, metalness:0.7 })
+    );
+    channel.position.set(0, h-0.01, -d/2+0.3);
+    scene.add(channel);
+
+    // Difusor semitransparente
+    const diffuser = new THREE.Mesh(
+      new THREE.BoxGeometry(len, 0.015, 0.08),
+      new THREE.MeshBasicMaterial({ color:0xffffff, transparent:true, opacity:0.25 })
+    );
+    diffuser.position.set(0, h-0.045, -d/2+0.3);
+    scene.add(diffuser);
+
+    // La tira COB/monocolor como línea de luz continua (más fina que el neón)
+    addNeonTube(scene, [-len/2, h-0.045, -d/2+0.3], [len/2, h-0.045, -d/2+0.3], linea.cct);
+
+    // Segunda ranura paralela — falso techo con dos líneas
+    const channel2 = new THREE.Mesh(
+      new THREE.BoxGeometry(len, 0.05, 0.08),
+      new THREE.MeshStandardMaterial({ color:0x8a8a90, roughness:0.3, metalness:0.7 })
+    );
+    channel2.position.set(0, h-0.01, d/2-0.3);
+    scene.add(channel2);
+    const diffuser2 = new THREE.Mesh(
+      new THREE.BoxGeometry(len, 0.015, 0.08),
+      new THREE.MeshBasicMaterial({ color:0xffffff, transparent:true, opacity:0.25 })
+    );
+    diffuser2.position.set(0, h-0.045, d/2-0.3);
+    scene.add(diffuser2);
+    addNeonTube(scene, [-len/2, h-0.045, d/2-0.3], [len/2, h-0.045, d/2-0.3], linea.cct);
+
+    cam = { theta:0.2, phi:0.98, radius:4.8, target:[0, h*0.8, 0] };
+
+  } else if(cat === 'strip_wall') {
+    // Perfil aluminio en balda retroiluminada — RGBW+CCT
+    const { w, d, h } = ROOM;
+    const len = w*0.65;
+
+    // Estante / balda
+    const shelf = new THREE.Mesh(
+      new THREE.BoxGeometry(len, 0.04, 0.3),
+      new THREE.MeshStandardMaterial({ color:0x2a2018, roughness:0.6 })
+    );
+    shelf.position.set(0, h*0.52, -d/2+0.16);
+    scene.add(shelf);
+
+    // Segundo estante
+    const shelf2 = new THREE.Mesh(
+      new THREE.BoxGeometry(len, 0.04, 0.3),
+      new THREE.MeshStandardMaterial({ color:0x2a2018, roughness:0.6 })
+    );
+    shelf2.position.set(0, h*0.72, -d/2+0.16);
+    scene.add(shelf2);
+
+    // Perfil aluminio bajo cada estante
+    const prof1 = new THREE.Mesh(
+      new THREE.BoxGeometry(len, 0.03, 0.04),
+      new THREE.MeshStandardMaterial({ color:0x9a9aa0, roughness:0.3, metalness:0.7 })
+    );
+    prof1.position.set(0, h*0.5, -d/2+0.32);
+    scene.add(prof1);
+    const prof2 = new THREE.Mesh(
+      new THREE.BoxGeometry(len, 0.03, 0.04),
+      new THREE.MeshStandardMaterial({ color:0x9a9aa0, roughness:0.3, metalness:0.7 })
+    );
+    prof2.position.set(0, h*0.70, -d/2+0.32);
+    scene.add(prof2);
+
+    // Tira RGBW — luz de color
+    addNeonTube(scene, [-len/2, h*0.5, -d/2+0.34], [len/2, h*0.5, -d/2+0.34], linea.cct);
+    addNeonTube(scene, [-len/2, h*0.70, -d/2+0.34], [len/2, h*0.70, -d/2+0.34], linea.cct);
+
+    cam = { theta:0.15, phi:0.55, radius:4.6, target:[0, h*0.6, -d*0.2] };
+
+  } else if(cat === 'lum_spot') {
+    // Downlights empotrados en el techo en rejilla
+    const { w, d, h } = ROOM;
+    const positions = [
+      [-w*0.28, h-0.02, -d*0.28],
+      [ w*0.28, h-0.02, -d*0.28],
+      [-w*0.28, h-0.02,  d*0.08],
+      [ w*0.28, h-0.02,  d*0.08],
+    ];
+    const isSmall = ['baku','boston'].includes(linea.serie);
+    const r = isSmall ? 0.04 : 0.09;
+    const colorHex2 = neonColorHex(linea.cct.includes('1800K')||linea.cct.includes('2700K') ? '2700K' :
+      linea.cct.includes('4000K') ? '4000K' : linea.cct.includes('6000K') ? '5700K' : '3000K');
+    const color2 = new THREE.Color(colorHex2);
+
+    positions.forEach(pos => {
+      // Aro del downlight
+      const ring = new THREE.Mesh(
+        new THREE.TorusGeometry(r, 0.008, 8, 24),
+        new THREE.MeshStandardMaterial({ color:0x9a9aa0, roughness:0.3, metalness:0.7 })
+      );
+      ring.rotation.x = Math.PI/2;
+      ring.position.set(...pos);
+      scene.add(ring);
+      // Disco de luz
+      const disc = new THREE.Mesh(
+        new THREE.CircleGeometry(r*0.85, 24),
+        new THREE.MeshBasicMaterial({ color:0xffffff, transparent:true, opacity:0.9 })
+      );
+      disc.rotation.x = Math.PI/2;
+      disc.position.set(pos[0], pos[1]-0.005, pos[2]);
+      scene.add(disc);
+      // Cono de luz hacia abajo
+      const cone = new THREE.Mesh(
+        new THREE.ConeGeometry(r*2.5, 1.2, 16, 1, true),
+        new THREE.MeshBasicMaterial({ color:colorHex2, transparent:true, opacity:0.06, side:THREE.DoubleSide })
+      );
+      cone.rotation.x = Math.PI;
+      cone.position.set(pos[0], pos[1]-0.6, pos[2]);
+      scene.add(cone);
+      // Punto de luz
+      const pl = new THREE.PointLight(colorHex2, 0.6, 2.5);
+      pl.position.set(pos[0], pos[1]-0.1, pos[2]);
+      scene.add(pl);
+    });
+    cam = { theta:0.3, phi:0.68, radius:5.0, target:[0, h*0.5, 0] };
+
+  } else if(cat === 'lum_panel') {
+    // Panel LED empotrado en techo
+    const { w, d, h } = ROOM;
+    const pw = 0.595, pd = 0.595; // 600x600
+    const colorHex3 = neonColorHex(linea.cct.includes('3000K') ? '3000K' : linea.cct.includes('6000K') ? '5700K' : '4000K');
+
+    // Marco del panel
+    const frame = new THREE.Mesh(
+      new THREE.BoxGeometry(pw+0.04, 0.03, pd+0.04),
+      new THREE.MeshStandardMaterial({ color:0xb8b8c0, roughness:0.3, metalness:0.6 })
+    );
+    frame.position.set(0, h-0.015, -d*0.1);
+    scene.add(frame);
+    // Difusor luminoso
+    const panel = new THREE.Mesh(
+      new THREE.BoxGeometry(pw, 0.008, pd),
+      new THREE.MeshBasicMaterial({ color:new THREE.Color(colorHex3).multiplyScalar(1.3), transparent:true, opacity:0.92 })
+    );
+    panel.position.set(0, h-0.02, -d*0.1);
+    scene.add(panel);
+    // Luz de área simulada con varios puntos
+    for(let xi=-1;xi<=1;xi++) for(let zi=-1;zi<=1;zi++) {
+      const pl = new THREE.PointLight(colorHex3, 0.35, 3.5);
+      pl.position.set(xi*(pw/3), h-0.1, -d*0.1 + zi*(pd/3));
+      scene.add(pl);
+    }
+    cam = { theta:0.25, phi:0.75, radius:4.8, target:[0, h*0.7, -d*0.1] };
+
+  } else if(cat === 'lum_linear') {
+    // Horizon: luminaria lineal empotrada en techo, enlazada en L o T
+    const { w, d, h } = ROOM;
+    const colorHex4 = neonColorHex(linea.cct.includes('3000K') ? '3000K' : linea.cct.includes('5700K') ? '5700K' : '4000K');
+    const color4 = new THREE.Color(colorHex4);
+
+    // Dos tramos lineales en L
+    const positions = [
+      { from:[-w*0.35, h-0.025, -d*0.15], to:[w*0.35, h-0.025, -d*0.15] },
+      { from:[w*0.35, h-0.025, -d*0.15], to:[w*0.35, h-0.025, d*0.25] },
+    ];
+
+    positions.forEach(({from, to}) => {
+      const a = new THREE.Vector3(...from), b = new THREE.Vector3(...to);
+      const dir = new THREE.Vector3().subVectors(b,a);
+      const len = dir.length();
+      const mid = new THREE.Vector3().addVectors(a,b).multiplyScalar(0.5);
+
+      // Cuerpo aluminio de la luminaria
+      const body = new THREE.Mesh(
+        new THREE.BoxGeometry(len, 0.05, 0.075),
+        new THREE.MeshStandardMaterial({ color:0xb8b8c0, roughness:0.3, metalness:0.6 })
+      );
+      body.position.copy(mid);
+      body.quaternion.setFromUnitVectors(new THREE.Vector3(1,0,0), dir.clone().normalize());
+      scene.add(body);
+
+      // Difusor
+      const diff = new THREE.Mesh(
+        new THREE.BoxGeometry(len, 0.008, 0.065),
+        new THREE.MeshBasicMaterial({ color:colorHex4, transparent:true, opacity:0.88 })
+      );
+      diff.position.set(mid.x, mid.y-0.03, mid.z);
+      diff.quaternion.copy(body.quaternion);
+      scene.add(diff);
+
+      // Luz
+      const pl = new THREE.PointLight(colorHex4, 0.8, 3.5);
+      pl.position.copy(mid); pl.position.y -= 0.2;
+      scene.add(pl);
+    });
+    cam = { theta:0.3, phi:0.68, radius:5.0, target:[0, h*0.6, 0] };
+
+  } else if(cat === 'ceiling') {
     // Perfil/canal en la cornisa del techo, pared trasera
     const len = w*0.78;
     const trim = new THREE.Mesh(
@@ -1549,11 +1972,16 @@ function buildSceneForLine(linea) {
 }
 
 const CATEGORY_LABELS = {
-  ceiling: 'Cornisa de techo · perfil empotrado/superficie',
-  floor:   'Zócalo transitable · cerca del acceso',
-  ring:    'Colgante 360° · centro del espacio',
-  corner:  'Arista vertical de mueble en esquina',
-  wall:    'Panel retroiluminado en pared',
+  ceiling:       'Cornisa de techo · perfil empotrado/superficie',
+  floor:         'Zócalo transitable · cerca del acceso',
+  ring:          'Colgante 360° · centro del espacio',
+  corner:        'Arista vertical de mueble en esquina',
+  wall:          'Panel retroiluminado en pared',
+  strip_ceiling: 'Tira LED · perfil aluminio empotrado en techo',
+  strip_wall:    'Tira LED · perfil aluminio en balda/pared retroiluminada',
+  lum_spot:      'Downlight / Foco · empotrado en techo',
+  lum_panel:     'Panel LED · empotrado en techo (600×600 o 1200×300mm)',
+  lum_linear:    'Luminaria lineal empotrable · 1200mm enlazable en L, T o +',
 };
 
 function updateCamera3D() {
@@ -1577,14 +2005,14 @@ function disposeScene(scene) {
 }
 
 function lineas3D() {
-  // La maqueta 3D solo representa líneas de neón (las tiras LED no tienen placement de instalación)
-  return lineas.map((l,i)=>({l,i})).filter(x => !isStrip(x.l.serie));
+  // Todas las líneas van a la maqueta 3D (neón con su placement, tiras con perfil aluminio)
+  return lineas.map((l,i)=>({l,i}));
 }
 
 function renderTabs() {
   const tabs = document.getElementById('modal3dTabs');
   tabs.innerHTML = lineas3D().map(({l,i}) => {
-    const d = ND[l.serie];
+    const d = productInfo(l.serie);
     const saved = room3DShots[i] ? ' ✓' : '';
     return `<button class="modal3d-tab ${i===three3d.activeIdx?'active':''}" onclick="selectLine3D(${i})">${i+1} · ${d.name} ${l.cct}${saved}</button>`;
   }).join('');
@@ -1633,7 +2061,7 @@ function selectLine3D(idx) {
   renderTabs();
 
   const linea = lineas[idx];
-  const d = ND[linea.serie];
+  const d = productInfo(linea.serie);
   const cat = lineCategory(linea.serie);
 
   disposeScene(three3d.scene);
@@ -1654,14 +2082,14 @@ function selectLine3D(idx) {
         <div class="legend-pos">${CATEGORY_LABELS[cat]}</div>
       </div>
     </div>
-    ${d.excl?'<div class="sb-excl" style="margin-top:10px;">✦ EXCLUSIVO NAVIGATOR</div>':''}
+    ${d.excl?'<div class="sb-excl" style="margin-top:10px;">✦ EXCLUSIVO NAVIGATOR</div>':d.categoria?`<div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);margin-top:8px;letter-spacing:1px">${d.categoria}</div>`:''}
   `;
 }
 
 function open3DView() {
   const n3d = lineas3D();
   if(n3d.length === 0) {
-    addMsg('nav','La maqueta 3D está disponible para líneas de neón. Las tiras LED no tienen una posición de instalación tipo (van en perfiles a medida del proyecto) — usa el presupuesto PDF para esas líneas.');
+    addMsg('nav','Necesito al menos una línea confirmada en el presupuesto para generar la maqueta 3D.');
     return;
   }
   const modal = document.getElementById('modal3d');
