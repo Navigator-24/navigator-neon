@@ -209,7 +209,7 @@ body{background:var(--bg);color:var(--white);font-family:'Syne',sans-serif;font-
 </div>
 
 <header class="hdr">
-  <div class="hdr-logo">Navigator <span>CONFIGURADOR IA · NEONES 2026</span></div>
+  <div class="hdr-logo">Navigator <span>DISEÑADOR DE INTERIORES IA · 2026</span></div>
   <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:600;letter-spacing:2px;padding:5px 12px;background:var(--y2);border:1px solid var(--y3);color:var(--y);">✦ POWERED BY CLAUDE</div>
 </header>
 
@@ -381,6 +381,76 @@ const STRIPS = {
     },
     kw:['rgbw','rgb y blanco','color y temperatura','dual','escaparate dinamico','ambiente cambiante'],
     why:'Combina color RGB y blanco regulable en la misma tira — máxima versatilidad de escenas.'
+  },
+  galileo:{
+    name:'Galileo', categoria:'Tira 24V alta densidad SMD5630',
+    desc:'Tira LED 24V alta luminosidad 14,4-19,2W/m · hasta 2.880 lm/m · SMD5630',
+    w:'10mm', ip:'IP20', v:'24V', cri:'>90', rollo:5,
+    corte:71.4,
+    skus:{
+      '3000K 14,4W':{ref:'21816',watts:14.4,lm:2800,leds:130,pvp:144.20},
+      '4000K 14,4W':{ref:'21823',watts:14.4,lm:2840,leds:130,pvp:144.20},
+      '6000K 14,4W':{ref:'21830',watts:14.4,lm:2880,leds:130,pvp:144.20},
+      '3000K 19,2W':{ref:'21847',watts:19.2,lm:3800,leds:180,pvp:195.70},
+      '4000K 19,2W':{ref:'21854',watts:19.2,lm:3820,leds:180,pvp:195.70},
+    },
+    kw:['galileo','alta luminosidad','alta densidad','smd5630','potente','tienda','retail','escaparate luminoso'],
+    why:'La tira 24V de mayor flujo — hasta 3.820 lm/m. Para aplicaciones que requieren máxima iluminación.'
+  },
+  lara:{
+    name:'Lara', categoria:'Tira COB 24V corte libre',
+    desc:'Tira COB 24V corte libre 14W/m · IP20 · CRI>90 · efecto continuo sin punto de luz',
+    w:'8mm', ip:'IP20', v:'24V', cri:'>90', rollo:5,
+    corte:0, // corte libre
+    skus:{
+      '2700K':{ref:'61107',watts:14,lm:1300,leds:528,pvp:64.90},
+      '3000K':{ref:'61108',watts:14,lm:1350,leds:528,pvp:64.90},
+      '4000K':{ref:'61109',watts:14,lm:1400,leds:528,pvp:64.90},
+    },
+    kw:['lara','cob libre','corte libre','cob','sin punto de luz','armario','estanteria','mueble','continuo','slim'],
+    why:'COB corte libre — se puede cortar en cualquier punto sin restricción. Sección 8mm ultracompacta.'
+  },
+  mara:{
+    name:'Mara', categoria:'Tira COB 24V 1800K-6000K',
+    desc:'Tira COB 24V 10W/m · gama completa 1800K–6000K · Samsung · IP20',
+    w:'8mm', ip:'IP20', v:'24V', cri:'>80', rollo:5,
+    corte:41.66,
+    skus:{
+      '1800K':{ref:'83974',watts:10,lm:600,leds:384,pvp:59.70},
+      '2200K':{ref:'83975',watts:10,lm:800,leds:384,pvp:59.70},
+      '2700K':{ref:'83552',watts:10,lm:950,leds:384,pvp:59.70},
+      '3000K':{ref:'NV0127',watts:10,lm:1000,leds:384,pvp:59.70},
+      '4000K':{ref:'NV0128',watts:10,lm:1050,leds:384,pvp:59.70},
+      '6000K':{ref:'NV0129',watts:10,lm:1100,leds:384,pvp:59.70},
+    },
+    kw:['mara','cob calidez','1800k','vela','ambar','samsung','cocina calida','hosteleria'],
+    why:'La única COB 24V con 1800K — efecto vela y ámbar para hostelería y diseño de interiores.'
+  },
+  lia:{
+    name:'Lía', categoria:'Tira 24V ultra slim 5mm',
+    desc:'Tira LED 24V ultra slim 5mm · Cree · IP20 · ideal para cartelería y espacios reducidos',
+    w:'5mm', ip:'IP20', v:'24V', cri:'>80', rollo:5,
+    corte:10,
+    skus:{
+      '3000K':{ref:'83342',watts:10,lm:600,leds:120,pvp:31.50},
+      '4000K':{ref:'83343',watts:10,lm:625,leds:120,pvp:31.50},
+      '6000K':{ref:'83344',watts:10,lm:650,leds:120,pvp:31.50},
+    },
+    kw:['lia','slim','5mm','ultradelgada','carteleria','letras','espacio reducido','estrecha','delgada'],
+    why:'La tira más estrecha del catálogo — 5mm de ancho. Idónea para letras, marcos y espacios mínimos.'
+  },
+  nora:{
+    name:'Nora', categoria:'Tira 24V ultra slim 5mm CRI>80',
+    desc:'Tira LED 24V 5mm Cree IP20 · corte cada 1cm · alta flexibilidad para cartelería',
+    w:'5mm', ip:'IP20', v:'24V', cri:'>80', rollo:5,
+    corte:10,
+    skus:{
+      '3000K':{ref:'83342',watts:10,lm:600,leds:120,pvp:31.50},
+      '4000K':{ref:'83343',watts:10,lm:625,leds:120,pvp:31.50},
+      '6000K':{ref:'83344',watts:10,lm:650,leds:120,pvp:31.50},
+    },
+    kw:['nora','slim','5mm','carteleria','letras','flexible','corte frecuente','estrecha'],
+    why:'Tira 5mm de alta flexibilidad — corte cada 1cm para adaptarse a cualquier forma de cartelería.'
   },
   fermi:{
     name:'Fermi', categoria:'Tira 230V SCOB IP65',
@@ -1383,7 +1453,7 @@ function resetAll() {
 // SYSTEM PROMPT
 // ════════════════════════════════════════════
 function systemPrompt() {
-  return `Eres el asistente de configuración de neones de NAVIGATOR LIGHTING SPAIN (Alcantarilla, Murcia).
+  return `Eres el diseñador de interiores IA de NAVIGATOR LIGHTING SPAIN (Alcantarilla, Murcia). Tu rol es recomendar la iluminación perfecta para cada proyecto — neón LED, tiras LED o luminarias — con criterio estético y técnico.
 
 SERIES DISPONIBLES:
 - tetra3d: formas 3D, logotipos, rótulos, flexión bidireccional, 1800K–4000K
@@ -1407,6 +1477,11 @@ TIRAS LED 24V (familia distinta del neón — sin perfil de silicona, van dentro
 - cleo: COB 24V, IP20, sin punto de luz (línea continua), corte cada 50mm. Temperaturas: 2700K/3000K/4000K. PVP 79,00€/m. Uso: foseados de diseño, arquitectura, efecto premium continuo.
 - leo: COB 24V económico, IP20, corte cada 45mm. Temperaturas: 3000K/4000K/6000K. PVP 70,55€/m. Uso: COB de entrada, efecto continuo a menor coste que Cleo.
 - rgbwcct: RGBW+CCT 24V, IP20, corte cada 100mm. Combina RGB + blanco regulable. SKUs con formato "RGB+3000K" / "RGB+4000K" / "RGB+6000K", PVP 76,15€/m. Uso: escaparates dinámicos, ambientes con escenas de color y blanco.
+- galileo: Tira 24V alta luminosidad SMD5630 14,4-19,2W/m, IP20, CRI>90. Temperaturas: 3000K/4000K/6000K. PVP 144,20€/m (14,4W) o 195,70€/m (19,2W). Uso: retail de alta exigencia, donde se necesita máxima luminosidad.
+- lara: Tira COB 24V corte libre 14W/m, IP20, CRI>90, sección 8mm. Temperaturas: 2700K/3000K/4000K. PVP 64,90€/m. Uso: armarios, muebles, marcos, donde se necesita cortar en cualquier punto.
+- mara: Tira COB 24V 10W/m Samsung, IP20, CRI>80. Temperaturas: 1800K/2200K/2700K/3000K/4000K/6000K. PVP 59,70€/m. Uso: hostelería con efecto vela/ámbar, única COB con 1800K.
+- lia: Tira LED 24V ultra slim 5mm Cree, IP20, CRI>80, corte cada 1cm. Temperaturas: 3000K/4000K/6000K. PVP 31,50€/m. Uso: cartelería, letras, espacios mínimos de 5mm.
+- nora: Similar a Lía — tira 5mm alta flexibilidad, corte cada 1cm. Temperaturas: 3000K/4000K/6000K. PVP 31,50€/m. Uso: cartelería con curvas y formas complejas.
 - fermi: Tira 230V SCOB 14W/m, IP65, CRI>90. Temperaturas: 1800K/2200K/2700K/3000K/4000K/6500K. PVP 19,50€/m. SIN DRIVER. Uso: instalaciones exteriores o interiores sin fuente de alimentación.
 - cory: Tira 230V Cree 14W/m IP67 monocolor o RGB 12W/m. Temperaturas: 2700K/3000K/4000K/6000K/RGB. PVP 18,95€/m mono · 29,50€/m RGB. SIN DRIVER. Uso: exterior de alta exigencia IP67, piscinas, fachadas.
 
@@ -1440,7 +1515,7 @@ REGLAS DE SELECCIÓN NEÓN:
 negro/oscuro→dark | sin driver/230V→vira | empotrar/encimera→slot | esquina/arista→apex | suelo/pisable→forza | dmx/consola→pix | 360°/colgante→halo | 3d/logotipo→tetra3d | rgb/color→cube | resto→tetra
 
 REGLAS DE SELECCIÓN TIRA LED:
-sin punto de luz/efecto continuo/premium→cleo | cob económico/básico→leo | rgb y blanco/dinámico/escaparate→rgbwcct | 230V exterior IP65 CRI90→fermi | 230V exterior IP67 RGB o monocolor Cree→cory | resto (iluminación general 24V)→newton
+sin punto de luz/efecto continuo/premium→cleo | cob corte libre/ultracompacta→lara | cob con 1800K/vela/hostelería→mara | cob económico/básico→leo | rgb y blanco/dinámico/escaparate→rgbwcct | máxima luminosidad/alta densidad/retail→galileo | ultra slim 5mm/cartelería/letras→lia (o nora si necesita máxima flexibilidad) | 230V exterior IP65 CRI90→fermi | 230V exterior IP67 RGB o monocolor Cree→cory | resto (iluminación general 24V)→newton
 
 REGLAS DE SELECCIÓN LUMINARIA:
 mini foco/joyería/expositor→baku | spot/acento/hostelería→boston | downlight básico/hogar/CCT económico→milan | húmedo/baño/cocina/IP54/CRI90→mega | downlight estándar/varios tamaños→roma | sensor/pasillo/2en1→aquiles | panel/oficina/UGR19/flicker free→volta | lineal/enlazable/regleta continua→horizon
@@ -2183,8 +2258,8 @@ function close3DView() {
 // ════════════════════════════════════════════
 function init() {
   addMsg('nav',
-    '¡Hola! Soy el configurador de neones Navigator. Describe tu proyecto y te recomendaré la serie correcta, con el presupuesto desglosado en el panel derecho.<br><br>Puedes pedir <strong>varias líneas en el mismo proyecto</strong> — por ejemplo, configura una serie, y luego escribe "y además necesito..." para añadir otra.<br><br>También puedes subir con 📷 una <strong>foto del espacio</strong> (para ver cómo quedaría el neón instalado) o un <strong>plano de arquitecto</strong> (leo las cotas y calculo los metros lineales por ti).',
-    ['Barra de bar negra cálido','Foseado sin driver 230V','Empotrar en encimera','Suelo transitable jardín','Rótulo con RGB','Esquinas de mueble']
+    '¡Hola! Soy tu <strong>diseñador de interiores Navigator</strong>. Cuéntame tu proyecto y te recomendaré la iluminación perfecta — neón, tira LED o luminaria — con el presupuesto desglosado al instante en el panel derecho.<br><br>Puedes añadir <strong>varias líneas al mismo proyecto</strong> y combinar familias de producto. También puedes subir con 📷 una <strong>foto o plano del espacio</strong> para que calcule los metros y visualice cómo quedará.',
+    ['Barra de bar negra cálido','Foseado sin driver 230V','Empotrar en encimera','Downlights para oficina','Tira COB sin punto de luz','Panel LED para falso techo']
   );
   updateSidebar();
 }
