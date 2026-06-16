@@ -1524,25 +1524,26 @@ async function sendMessage() {
     const raw=await callClaude(text,photo);
     removeTyping();
 
-    // Parse CONFIG
-    const m=raw.match(/CONFIG:(\{[^}]+\})/);
-    if(m) {
-      try {
-        const c=JSON.parse(m[1]);
-        if(c.serie&&(ND[c.serie]||STRIPS[c.serie]||LUMS[c.serie])) cfg.serie=c.serie;
-        if(c.cct) cfg.cct=c.cct;
-        if(c.metros&&!isNaN(c.metros)) cfg.metros=parseInt(c.metros);
-        // Si la línea está completa, confirmarla automáticamente al presupuesto
-        if(cfg.serie && cfg.cct && cfg.metros) {
-          addLinea({...cfg});
-          cfg = {serie:null, cct:null, metros:null};
-        }
-        updateSidebar();
-      } catch(e){}
+    // Parse CONFIG — puede haber varios en el mismo mensaje (multilínea)
+    const configMatches = [...raw.matchAll(/CONFIG:(\{[^{}]+\})/g)];
+    if(configMatches.length > 0) {
+      configMatches.forEach(m => {
+        try {
+          const parsed = JSON.parse(m[1]);
+          if(parsed.serie && (ND[parsed.serie]||STRIPS[parsed.serie]||LUMS[parsed.serie])) cfg.serie = parsed.serie;
+          if(parsed.cct) cfg.cct = parsed.cct;
+          if(parsed.metros && !isNaN(parsed.metros)) cfg.metros = parseInt(parsed.metros);
+          if(cfg.serie && cfg.cct && cfg.metros) {
+            addLinea({...cfg});
+            cfg = {serie:null, cct:null, metros:null};
+          }
+        } catch(e){}
+      });
+      updateSidebar();
     }
 
     // Display text
-    let disp=raw.replace(/CONFIG:\{[^}]+\}/,'').trim()
+    let disp=raw.replace(/CONFIG:\{[^{}]+\}/g,'').trim()
       .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
       .replace(/_(.*?)_/g,'<em>$1</em>');
 
