@@ -203,6 +203,8 @@ body{background:var(--bg);color:var(--white);font-family:'Syne',sans-serif;font-
   <div class="modal3d-hint" style="display:flex;align-items:center;justify-content:center;gap:18px;">
     <span>Arrastra para rotar · Rueda del ratón para zoom · Maqueta orientativa, no a escala real</span>
     <button id="capture3DBtn" onclick="capture3DShot()" style="background:var(--y2);border:1px solid var(--y3);color:var(--y);padding:6px 14px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:1.5px;cursor:pointer;white-space:nowrap;">📸 Usar esta vista en el PDF</button>
+    <button onclick="download3DShot()" style="background:var(--s3);border:1px solid var(--s4);color:var(--light);padding:6px 14px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:1.5px;cursor:pointer;white-space:nowrap;">↓ Descargar imagen</button>
+    <button onclick="download3DShot()" style="background:var(--s3);border:1px solid var(--s4);color:var(--dim);padding:6px 14px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:1.5px;cursor:pointer;white-space:nowrap;">↓ Descargar imagen</button>
   </div>
 </div>
 
@@ -323,6 +325,87 @@ const ND = {
     why:'Chip Cree. 840 lm/m. Rótulos y foseados.'},
 };
 
+// ════════════════════════════════════════════
+// TIRAS LED 24V — Monocolor, COB, RGBW+CCT
+// ════════════════════════════════════════════
+const STRIPS = {
+  newton:{
+    name:'Newton', categoria:'Monocolor 24V',
+    desc:'Tira LED estándar, chip Cree, máxima vida útil',
+    w:'10mm', ip:'IP20', v:'24V', cri:'>90', rollo:5,
+    corte:33.3,
+    skus:{
+      '2700K':{ref:'14560',watts:4.8,lm:480,leds:60,pvp:31.50},
+      '3000K':{ref:'14561',watts:4.8,lm:530,leds:60,pvp:31.50},
+      '4000K':{ref:'14562',watts:4.8,lm:550,leds:60,pvp:31.50},
+      '6000K':{ref:'14563',watts:4.8,lm:580,leds:60,pvp:31.50},
+    },
+    kw:['tira monocolor','tira blanca','iluminacion general','interior','tira led basica','techo continuo','falso techo'],
+    why:'La tira más versátil para iluminación general — chip Cree, IP20, corte cada 33,3mm.'
+  },
+  cleo:{
+    name:'Cleo', categoria:'COB 24V',
+    desc:'Tira COB alta densidad, sin punto de luz, efecto continuo',
+    w:'10mm', ip:'IP20', v:'24V', cri:'>90', rollo:5,
+    corte:50,
+    skus:{
+      '2700K':{ref:'61005',watts:14.4,lm:1500,leds:528,pvp:79.00},
+      '3000K':{ref:'61002',watts:14.4,lm:1450,leds:528,pvp:79.00},
+      '4000K':{ref:'61001',watts:14.4,lm:1400,leds:528,pvp:79.00},
+    },
+    kw:['cob','sin punto de luz','efecto continuo','linea continua','alta densidad','premium','arquitectura'],
+    why:'COB sin punto de luz visible — efecto de línea continua, ideal para foseados y diseño de interiores.'
+  },
+  leo:{
+    name:'Leo', categoria:'COB 24V',
+    desc:'Tira COB compacta, sección reducida',
+    w:'10mm', ip:'IP20', v:'24V', cri:'>90', rollo:5,
+    corte:45,
+    skus:{
+      '3000K':{ref:'21786',watts:14.4,lm:1450,leds:528,pvp:70.55},
+      '4000K':{ref:'21793',watts:14.4,lm:1500,leds:528,pvp:70.55},
+      '6000K':{ref:'21809',watts:14.4,lm:1550,leds:528,pvp:70.55},
+    },
+    kw:['cob economico','cob basico','sin punto de luz economico'],
+    why:'COB de entrada — efecto continuo sin punto de luz a precio más ajustado que Cleo.'
+  },
+  rgbwcct:{
+    name:'RGBW+CCT', categoria:'RGBW + CCT 24V',
+    desc:'Color + blanco variable en una sola tira, doble canal',
+    w:'12mm', ip:'IP20', v:'24V', cri:'>90', rollo:5,
+    corte:100,
+    skus:{
+      'RGB+3000K':{ref:'82769',watts:14.4,lm:'620+1.400',leds:60,pvp:76.15},
+      'RGB+4000K':{ref:'82770',watts:14.4,lm:'620+1.420',leds:60,pvp:76.15},
+      'RGB+6000K':{ref:'82771',watts:14.4,lm:'620+1.440',leds:60,pvp:76.15},
+    },
+    kw:['rgbw','rgb y blanco','color y temperatura','dual','escaparate dinamico','ambiente cambiante'],
+    why:'Combina color RGB y blanco regulable en la misma tira — máxima versatilidad de escenas.'
+  },
+};
+
+const STRIP_ACCS = [
+  {ref:'PA014',desc:'Perfil Neo aluminio 2m + difusor',pvp:8.85,unit:'ud.(2m)',qty:(m)=>Math.ceil(m/2)},
+  {ref:'PA311',desc:'Perfil Briano aluminio 2m + difusor',pvp:14.95,unit:'ud.(2m)',qty:(m)=>Math.ceil(m/2),opt:true},
+  {ref:'CONN-STRIP',desc:'Conector de alimentación',pvp:1.20,unit:'ud.',qty:(m,rollos)=>rollos},
+];
+
+function pvpStrip(serie, cct) {
+  const s = STRIPS[serie]; if(!s) return null;
+  const sku = s.skus[cct] || Object.values(s.skus)[0];
+  return sku ? sku.pvp : null;
+}
+function refStrip(serie, cct) {
+  const s = STRIPS[serie]; if(!s) return null;
+  const sku = s.skus[cct] || Object.values(s.skus)[0];
+  return sku ? sku.ref : null;
+}
+function wattsStrip(serie, cct) {
+  const s = STRIPS[serie]; if(!s) return 14.4;
+  const sku = s.skus[cct] || Object.values(s.skus)[0];
+  return sku ? sku.watts : 14.4;
+}
+
 const ACCS = {
   new_series:[
     {ref:'Grapa 1617',desc:'Grapa sujeción',pvp:1.50,unit:'ud.',qty:(m)=>Math.ceil(m/0.5)},
@@ -366,13 +449,35 @@ let cfg = {serie:null, cct:null, metros:null};
 let lineas = []; // líneas confirmadas del presupuesto multilinea
 const history = [];
 
+// Normaliza acceso a producto sea neón (ND) o tira LED (STRIPS)
+function isStrip(serie) { return !!STRIPS[serie]; }
+
+function productInfo(serie) {
+  if(isStrip(serie)) {
+    const s = STRIPS[serie];
+    return {
+      name: s.name, w: s.w, ip: s.ip, ik: '', v: s.v, excl: false,
+      watts: null, // varía por cct, se calcula con wattsStrip
+      family: 'strip', categoria: s.categoria, rollo: s.rollo,
+    };
+  }
+  const d = ND[serie];
+  return { ...d, family: 'neon' };
+}
+
 function pvpM(serie, cct) {
+  if(isStrip(serie)) return pvpStrip(serie, cct);
   const d = ND[serie]; if(!d||!d.pvp) return null;
   if(typeof d.pvp==='object') return cct==='RGB'?d.pvp.rgb:d.pvp.mono;
   return d.pvp;
 }
 
 function getAccs(serie, metros) {
+  if(isStrip(serie)) {
+    const s = STRIPS[serie];
+    const rollos = Math.ceil(metros/(s.rollo||5));
+    return STRIP_ACCS.map(a=>({...a, qty2:a.qty(metros,rollos), total:a.pvp?a.pvp*a.qty(metros,rollos):null}));
+  }
   const d = ND[serie];
   const rollos = Math.ceil(metros/((d.rollo||5000)/1000));
   const list = ACCS[serie] || ACCS.new_series;
@@ -462,11 +567,13 @@ function removeTyping(){const t=document.getElementById('typing');if(t)t.remove(
 // LÍNEAS MULTILINEA — gestión del presupuesto
 // ════════════════════════════════════════════
 function calcLineaTotals(linea) {
-  const d = ND[linea.serie];
-  const ref = d.refs[linea.cct] || Object.values(d.refs)[0];
+  const isS = isStrip(linea.serie);
+  const d = productInfo(linea.serie);
+  const ref = isS ? refStrip(linea.serie, linea.cct) : (ND[linea.serie].refs[linea.cct] || Object.values(ND[linea.serie].refs)[0]);
   const pm = pvpM(linea.serie, linea.cct);
   const metros = linea.metros;
   const totalNeon = pm ? pm*metros : 0;
+  const watts = isS ? wattsStrip(linea.serie, linea.cct) : d.watts;
 
   const accs = getAccs(linea.serie, metros);
   const oblAcc = accs.filter(a=>!a.opt);
@@ -474,19 +581,20 @@ function calcLineaTotals(linea) {
 
   let totalDriver = 0, driverInfo = null;
   if(d.v !== '230V') {
-    const exterior = ['forza','halo'].includes(linea.serie);
-    const {driver, qty, total} = selectDriver(Math.round(d.watts*metros), exterior);
+    const exterior = !isS && ['forza','halo'].includes(linea.serie);
+    const {driver, qty, total} = selectDriver(Math.round(watts*metros), exterior);
     totalDriver = total;
     driverInfo = {driver, qty, total, exterior};
   }
 
   const subtotal = totalNeon + totalAcc + totalDriver;
-  return {d, ref, pm, metros, totalNeon, totalAcc, totalDriver, driverInfo, subtotal, accs: oblAcc};
+  return {d, ref, pm, metros, watts, totalNeon, totalAcc, totalDriver, driverInfo, subtotal, accs: oblAcc, isStrip:isS};
 }
 
 function addLinea(linea) {
   lineas.push(linea);
-  addMsg('nav', `<strong>✓ Línea añadida al presupuesto:</strong> ${ND[linea.serie].name} ${linea.cct} · ${linea.metros}m. ¿Necesitas algo más para este proyecto, o generamos el presupuesto?`,
+  const d = productInfo(linea.serie);
+  addMsg('nav', `<strong>✓ Línea añadida al presupuesto:</strong> ${d.name} ${linea.cct} · ${linea.metros}m. ¿Necesitas algo más para este proyecto, o generamos el presupuesto?`,
     ['Generar presupuesto PDF','Añadir otra línea','Simular en mi espacio']);
 }
 
@@ -542,16 +650,17 @@ function updateSidebar() {
 
   // ── Línea en curso (sin confirmar aún) ──
   if(hayLineaEnCurso) {
-    const d = cfg.serie ? ND[cfg.serie] : null;
+    const d = cfg.serie ? productInfo(cfg.serie) : null;
     const pm = (cfg.serie && cfg.cct) ? pvpM(cfg.serie, cfg.cct) : null;
+    const wattsCurr = (cfg.serie && cfg.cct) ? (isStrip(cfg.serie) ? wattsStrip(cfg.serie, cfg.cct) : d.watts) : null;
     html += `<div class="sb-section">
       <div class="sb-section-title">Configurando ahora</div>
       <div class="sb-series-block" style="border-style:dashed;">
-        ${d ? `<div class="sb-series-name">${d.name}</div><div class="sb-series-sub">${d.w} · ${d.ip} · ${d.v}${d.excl?' · ✦ Exclusivo':''}</div>` : '<div class="sb-empty" style="padding:4px 0;text-align:left;">Esperando serie...</div>'}
+        ${d ? `<div class="sb-series-name">${d.name}</div><div class="sb-series-sub">${d.w} · ${d.ip} · ${d.v}${d.excl?' · ✦ Exclusivo':''}${d.family==='strip'?' · '+d.categoria:''}</div>` : '<div class="sb-empty" style="padding:4px 0;text-align:left;">Esperando serie...</div>'}
       </div>
       ${cfg.cct?`<div class="sb-row"><span class="sb-label">Temperatura</span><span class="sb-val y">${cfg.cct}</span></div>`:''}
       ${cfg.metros?`<div class="sb-row"><span class="sb-label">Metros</span><span class="sb-val y">${cfg.metros} m exactos</span></div>`:''}
-      ${(cfg.metros && d)?`<div class="sb-row"><span class="sb-label">Potencia</span><span class="sb-val">${Math.round(d.watts*cfg.metros)} W</span></div>`:''}
+      ${(cfg.metros && wattsCurr)?`<div class="sb-row"><span class="sb-label">Potencia</span><span class="sb-val">${Math.round(wattsCurr*cfg.metros)} W</span></div>`:''}
       ${pm?`<div class="sb-row"><span class="sb-label">€/metro</span><span class="sb-val">${pm.toFixed(2).replace('.',',')} €</span></div>`:''}
     </div>`;
   }
@@ -975,18 +1084,18 @@ function printBudget() {
       <div class="bp-spec"><span class="bp-spec-l">Serie / Referencia</span><span class="bp-spec-v">${d.name} · ${t.ref}</span></div>
       <div class="bp-spec"><span class="bp-spec-l">Temperatura de color</span><span class="bp-spec-v">${l.cct}</span></div>
       <div class="bp-spec"><span class="bp-spec-l">Tensión</span><span class="bp-spec-v">${d.v}</span></div>
-      <div class="bp-spec"><span class="bp-spec-l">IP / IK</span><span class="bp-spec-v">${d.ip} · ${d.ik||'—'}</span></div>
-      <div class="bp-spec"><span class="bp-spec-l">SDCM / CRI</span><span class="bp-spec-v">SDCM3 · CRI>90</span></div>
-      <div class="bp-spec"><span class="bp-spec-l">Potencia</span><span class="bp-spec-v">${d.watts}W/m · Total ${Math.round(d.watts*l.metros)}W</span></div>
-      <div class="bp-spec"><span class="bp-spec-l">Servicio</span><span class="bp-spec-v">A metro · Sellado de fábrica</span></div>
-      <div class="bp-spec"><span class="bp-spec-l">Garantía / Vida útil</span><span class="bp-spec-v">5 años · 50.000h</span></div>
+      <div class="bp-spec"><span class="bp-spec-l">IP / IK</span><span class="bp-spec-v">${d.ip}${d.ik?' · '+d.ik:''}</span></div>
+      <div class="bp-spec"><span class="bp-spec-l">${t.isStrip?'CRI':'SDCM / CRI'}</span><span class="bp-spec-v">${t.isStrip?'>90 Ra':'SDCM3 · CRI>90'}</span></div>
+      <div class="bp-spec"><span class="bp-spec-l">Potencia</span><span class="bp-spec-v">${t.watts}W/m · Total ${Math.round(t.watts*l.metros)}W</span></div>
+      <div class="bp-spec"><span class="bp-spec-l">${t.isStrip?'Tipo':'Servicio'}</span><span class="bp-spec-v">${t.isStrip?d.categoria:'A metro · Sellado de fábrica'}</span></div>
+      <div class="bp-spec"><span class="bp-spec-l">Garantía / Vida útil</span><span class="bp-spec-v">${t.isStrip?'3-5 años':'5 años'} · 50.000h</span></div>
     </div>
-    ${room3DShots[idx] ? `<div class="bp-render"><img src="${room3DShots[idx]}"><div class="bp-render-cap">Maqueta 3D · Línea ${idx+1} · ${d.name} ${l.cct}</div></div>` : ''}`;
+    ${room3DShots[idx] && !t.isStrip ? `<div class="bp-render"><img src="${room3DShots[idx]}"><div class="bp-render-cap">Maqueta 3D · Línea ${idx+1} · ${d.name} ${l.cct}</div></div>` : ''}`;
 
-    // Material row — neón
+    // Material row
     allRows += `<tr>
       <td>${t.ref}</td>
-      <td><strong>${d.name} ${l.cct}</strong> · ${d.w} · ${d.ip} · ${l.metros}m · Sellado de fábrica · SDCM3 · CRI>90</td>
+      <td><strong>${d.name} ${l.cct}</strong> · ${d.w} · ${d.ip} · ${l.metros}m · ${t.isStrip ? 'Rollo '+d.rollo+'m · CRI>90' : 'Sellado de fábrica · SDCM3 · CRI>90'}</td>
       <td class="r">${l.metros} m</td>
       <td class="r">${t.pm?t.pm.toFixed(2).replace('.',',')+'€':'—'}</td>
       <td class="r">${t.pm?(t.pm*l.metros).toFixed(2).replace('.',',')+'€':'consultar'}</td>
@@ -1101,8 +1210,26 @@ tetra3d:31,90 · vira:39,90 · cube_mono:33,90 · cube_rgb:44,90 · slot:33,90 �
 
 TEMPERATURAS: 1800K=vela/lujo · 2200K=muy cálido · 2700K=cálido · 3000K=neutro cálido · 4000K=neutro frío · 5700K=frío extremo · RGB=color
 
-REGLAS DE SELECCIÓN:
+TIRAS LED 24V (familia distinta del neón — sin perfil de silicona, van dentro de perfil de aluminio):
+- newton: Monocolor 24V, IP20, chip Cree, corte cada 33,3mm. Temperaturas: 2700K/3000K/4000K/6000K. PVP 31,50€/m. Uso: iluminación general, falsos techos, interiores estándar.
+- cleo: COB 24V, IP20, sin punto de luz (línea continua), corte cada 50mm. Temperaturas: 2700K/3000K/4000K. PVP 79,00€/m. Uso: foseados de diseño, arquitectura, efecto premium continuo.
+- leo: COB 24V económico, IP20, corte cada 45mm. Temperaturas: 3000K/4000K/6000K. PVP 70,55€/m. Uso: COB de entrada, efecto continuo a menor coste que Cleo.
+- rgbwcct: RGBW+CCT 24V, IP20, corte cada 100mm. Combina RGB + blanco regulable. SKUs con formato "RGB+3000K" / "RGB+4000K" / "RGB+6000K", PVP 76,15€/m. Uso: escaparates dinámicos, ambientes con escenas de color y blanco.
+
+CUÁNDO RECOMENDAR NEÓN VS TIRA LED:
+- NEÓN (las 10 series de arriba): cuando se busca un EFECTO DE LÍNEA DE LUZ VISIBLE, decorativo, con cuerpo de silicona — rótulos, foseados decorativos, contornos, perfiles de mobiliario, fachadas, elementos 3D.
+- TIRA LED: cuando se busca ILUMINACIÓN FUNCIONAL/GENERAL dentro de un perfil de aluminio — falsos techos completos, estanterías, armarios, iluminación de interiores estándar, COB para efecto continuo de diseño sin perfil de silicona.
+- Si el usuario menciona "perfil de aluminio", "falso techo", "armario", "estantería", "iluminación general/funcional" → tira LED.
+- Si menciona "rótulo", "contorno", "decorativo", "fachada", "mueble con borde iluminado", "efecto neón" → neón.
+- Si es ambiguo, puedes preguntar: "¿buscas un efecto decorativo de línea de luz (neón) o iluminación general dentro de un perfil (tira LED)?"
+
+REGLAS DE SELECCIÓN NEÓN:
 negro/oscuro→dark | sin driver/230V→vira | empotrar/encimera→slot | esquina/arista→apex | suelo/pisable→forza | dmx/consola→pix | 360°/colgante→halo | 3d/logotipo→tetra3d | rgb/color→cube | resto→tetra
+
+REGLAS DE SELECCIÓN TIRA LED:
+sin punto de luz/efecto continuo/premium→cleo | cob económico/básico→leo | rgb y blanco/dinámico/escaparate→rgbwcct | resto (iluminación general)→newton
+
+IMPORTANTE — CCT en CONFIG para tiras RGBW+CCT: usa el formato exacto de los SKUs, por ejemplo "RGB+3000K", "RGB+4000K" o "RGB+6000K". Para el resto de tiras y neones, usa el formato normal "2700K", "3000K", etc.
 
 REGLAS DE RESPUESTA:
 1. Responde SIEMPRE en español, máximo 3 frases, directo.
@@ -1186,7 +1313,7 @@ async function sendMessage() {
     if(m) {
       try {
         const c=JSON.parse(m[1]);
-        if(c.serie&&ND[c.serie]) cfg.serie=c.serie;
+        if(c.serie&&(ND[c.serie]||STRIPS[c.serie])) cfg.serie=c.serie;
         if(c.cct) cfg.cct=c.cct;
         if(c.metros&&!isNaN(c.metros)) cfg.metros=parseInt(c.metros);
         // Si la línea está completa, confirmarla automáticamente al presupuesto
@@ -1449,9 +1576,14 @@ function disposeScene(scene) {
   });
 }
 
+function lineas3D() {
+  // La maqueta 3D solo representa líneas de neón (las tiras LED no tienen placement de instalación)
+  return lineas.map((l,i)=>({l,i})).filter(x => !isStrip(x.l.serie));
+}
+
 function renderTabs() {
   const tabs = document.getElementById('modal3dTabs');
-  tabs.innerHTML = lineas.map((l,i) => {
+  tabs.innerHTML = lineas3D().map(({l,i}) => {
     const d = ND[l.serie];
     const saved = room3DShots[i] ? ' ✓' : '';
     return `<button class="modal3d-tab ${i===three3d.activeIdx?'active':''}" onclick="selectLine3D(${i})">${i+1} · ${d.name} ${l.cct}${saved}</button>`;
@@ -1470,6 +1602,30 @@ function capture3DShot() {
     btn.textContent = '✓ Vista guardada para el PDF';
     setTimeout(() => { btn.textContent = original; }, 1600);
   }
+}
+
+function download3DShot() {
+  if(!three3d.renderer) return;
+  three3d.renderer.render(three3d.scene, three3d.camera);
+  const dataUrl = three3d.renderer.domElement.toDataURL('image/png');
+  const linea = lineas[three3d.activeIdx];
+  const d = ND[linea.serie];
+  const a = document.createElement('a');
+  a.download = `navigator-maqueta-3d-${d.name.toLowerCase().replace(/\s+/g,'-')}-${linea.cct}.png`;
+  a.href = dataUrl;
+  a.click();
+}
+
+function download3DShot() {
+  if(!three3d.renderer) return;
+  three3d.renderer.render(three3d.scene, three3d.camera);
+  const dataUrl = three3d.renderer.domElement.toDataURL('image/jpeg', 0.92);
+  const linea = lineas[three3d.activeIdx];
+  const d = ND[linea.serie];
+  const a = document.createElement('a');
+  a.download = `navigator-3d-${d.name.toLowerCase()}-${linea.cct}.jpg`;
+  a.href = dataUrl;
+  a.click();
 }
 
 function selectLine3D(idx) {
@@ -1503,8 +1659,9 @@ function selectLine3D(idx) {
 }
 
 function open3DView() {
-  if(lineas.length === 0) {
-    addMsg('nav','Necesito al menos una línea confirmada en el presupuesto para generar la maqueta 3D.');
+  const n3d = lineas3D();
+  if(n3d.length === 0) {
+    addMsg('nav','La maqueta 3D está disponible para líneas de neón. Las tiras LED no tienen una posición de instalación tipo (van en perfiles a medida del proyecto) — usa el presupuesto PDF para esas líneas.');
     return;
   }
   const modal = document.getElementById('modal3d');
@@ -1512,7 +1669,7 @@ function open3DView() {
   const container = document.getElementById('three-container');
   container.innerHTML = '';
 
-  three3d.activeIdx = Math.min(three3d.activeIdx, lineas.length-1);
+  if(!n3d.find(x=>x.i===three3d.activeIdx)) three3d.activeIdx = n3d[0].i;
 
   const w = container.clientWidth, h = container.clientHeight;
   three3d.camera = new THREE.PerspectiveCamera(45, w/h, 0.1, 100);
